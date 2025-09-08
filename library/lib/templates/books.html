@@ -1,0 +1,46 @@
+{% extends 'reader_base.html' %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-info">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<h2>All Books</h2>
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>ISBN</th>
+            <th>Stock</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book.name }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.category }}</td>
+            <td>{{ book.isbn }}</td>
+            <td>{{ book.number_in_stock }}</td>
+            <td>
+                {% if book.number_in_stock > 0 %}
+                <form method="post" action="{% url 'issue_request' book.pk %}">
+                    {% csrf_token %}
+                    <button type="submit">Request Issue</button>
+                </form>
+                {% else %}
+                Out of Stock
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

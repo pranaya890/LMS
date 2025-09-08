@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Overdue Books</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Overdue Books</h2>
+    <a href="{% url 'view_issues' %}">Back to Issued Books</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Reader</th>
+                <th>Book</th>
+                <th>Issued Date</th>
+                <th>Due Date</th>
+                <th>Days Overdue</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in overdue_issues %}
+            <tr>
+                <td>{{ issue.reader.name }}</td>
+                <td>{{ issue.book.name }}</td>
+                <td>{{ issue.issued_date }}</td>
+                <td>{{ issue.due_date }}</td>
+                <td>{{ issue.days_overdue }}</td>
+                <td>
+                    <a href="{% url 'return_book' issue.pk %}">Return</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No overdue books.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

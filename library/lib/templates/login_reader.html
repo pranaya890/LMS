@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reader Login</title>
+</head>
+<body>
+    <h2>Reader Login</h2>
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label>Reader ID:</label>
+            <input type="text" name="reader_id" required>
+        </p>
+        <p>
+            <label>Password:</label>
+            <input type="password" name="password" required>
+        </p>
+        <button type="submit">Login</button>
+        <a href="{% url 'register_reader' %}">Register</a>
+    </form>
+</body>
+</html>
+{% endblock %}

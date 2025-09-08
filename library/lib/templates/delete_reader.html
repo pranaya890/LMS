@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Reader</title>
+</head>
+<body>
+    <h2>Are you sure you want to delete "{{ reader.name }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, Delete</button>
+        <a href="{% url 'view_readers' %}">Cancel</a>
+    </form>
+</body>
+</html>

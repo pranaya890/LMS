@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Reader</title>
+</head>
+<body>
+    <h2>Register as a Reader</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Register</button>
+        <a href="{% url 'login_reader' %}">Already have an account? Login</a>
+    </form>
+</body>
+</html>
+{% endblock %}

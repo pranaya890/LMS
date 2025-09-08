@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Books</title>
+</head>
+<body>
+    <h2>Search Books</h2>
+    <form method="get" action="{% url 'search_books' %}">
+        <input type="text" name="q" placeholder="Search by name, author, ISBN, or category" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <h3>Results{% if query %} for "{{ query }}"{% endif %}</h3>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>ISBN</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Stock</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.name }}</td>
+                <td>{{ book.isbn }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.category.name }}</td>
+                <td>{{ book.number_in_stock }}</td>
+                <td>
+                    {% if book.image %}
+                        <img src="{{ book.image.url }}" alt="{{ book.name }}" width="50">
+                    {% else %}
+                        No image
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No books found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

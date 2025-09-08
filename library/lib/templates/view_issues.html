@@ -1,0 +1,73 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Issued Books</title>
+    <style>
+        .overdue {
+            background-color: #ffcccc; /* light red for overdue */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>All Issued Books</h2>
+    <a href="{% url 'issue_book' %}">➕ Issue New Book</a> 
+    <table>
+        <thead>
+            <tr>
+                <th>Reader</th>
+                <th>Book</th>
+                <th>Issued Date</th>
+                <th>Due Date</th>
+                <th>Returned Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issues %}
+            <tr class="{% if issue.is_overdue %}overdue{% endif %}">
+                <td>{{ issue.reader.name }}</td>
+                <td>{{ issue.book.name }}</td>
+                <td>{{ issue.issued_date }}</td>
+                <td>{{ issue.due_date }}</td>
+                <td>
+                    {% if issue.returned_date %}
+                        {{ issue.returned_date }}
+                    {% else %}
+                        Not Returned
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not issue.returned_date %}
+                        <a href="{% url 'return_book' issue.pk %}">Return</a>
+                    {% else %}
+                        Returned
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No books have been issued yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+{% endblock%}

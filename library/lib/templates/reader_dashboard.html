@@ -1,0 +1,66 @@
+{% extends 'reader_base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<body>
+<main>
+    <h2>Welcome, {{ reader.name }}</h2>
+    <p><strong>Reader ID:</strong> {{ reader.reader_id }}</p>
+    <p><strong>Date of Birth:</strong> {{ reader.date_of_birth }}</p>
+    <p><strong>Phone:</strong> {{ reader.phone_number }}</p>
+    <p><strong>Address:</strong> {{ reader.address }}</p>
+
+    <h3>Your Issued Books</h3>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Issued Date</th>
+                <th>Due Date</th>
+                <th>Returned Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issues %}
+            <tr>
+                <td>{{ issue.book.name }}</td>
+                <td>{{ issue.issued_date }}</td>
+                <td>{{ issue.due_date }}</td>
+                <td>{% if issue.returned_date %}{{ issue.returned_date }}{% else %}Not Returned{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">You have no issued books.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Your Pending Fines</h3>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fine in fines %}
+            <tr>
+                <td>{{ fine.issue.book.name }}</td>
+                <td>{{ fine.amount }}</td>
+                <td><a href="{% url 'pay_fine' fine.pk %}">Pay</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No pending fines.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</main>
+</body>
+</html>
+{% endblock %}

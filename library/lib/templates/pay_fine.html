@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pay Fine</title>
+</head>
+<body>
+    <h2>Pay Fine</h2>
+    <p>Reader: {{ fine.issue.reader.name }}</p>
+    <p>Book: {{ fine.issue.book.name }}</p>
+    <p>Amount: {{ fine.amount }}</p>
+    <p>Calculated Date: {{ fine.calculated_date }}</p>
+
+    {% if fine.paid %}
+        <p><strong>Already Paid</strong></p>
+        <a href="{% url 'view_fines' %}">Back to Fines</a>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Mark as Paid</button>
+            <a href="{% url 'view_fines' %}">Cancel</a>
+        </form>
+    {% endif %}
+</body>
+</html>

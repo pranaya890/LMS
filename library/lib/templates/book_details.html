@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ book.name }} Details</title>
+</head>
+<body>
+    <h2>{{ book.name }}</h2>
+    <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+    <p><strong>Author:</strong> {{ book.author }}</p>
+    <p><strong>Category:</strong> {{ book.category.name }}</p>
+    <p><strong>Number in Stock:</strong> {{ book.number_in_stock }}</p>
+    <p>
+        <strong>Cover Image:</strong><br>
+        {% if book.image %}
+            <img src="{{ book.image.url }}" alt="{{ book.name }}" width="150">
+        {% else %}
+            No image available
+        {% endif %}
+    </p>
+    <p>
+        <a href="{% url 'edit_book' book.pk %}">Edit</a> |
+        <a href="{% url 'delete_book' book.pk %}">Delete</a> |
+        <a href="{% url 'view_books' %}">Back to Book List</a>
+    </p>
+</body>
+</html>

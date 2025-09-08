@@ -1,0 +1,30 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<h2>Categories</h2>
+<a href="{% url 'add_category' %}">Add Category</a>
+
+{% if categories %}
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+            <td>
+                <a href="{% url 'edit_category' category.id %}">Edit</a> |
+                <a href="{% url 'delete_category' category.id %}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No categories found.</p>
+{% endif %}
+{% endblock %}

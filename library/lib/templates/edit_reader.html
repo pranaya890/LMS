@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Reader</title>
+</head>
+<body>
+    <h2>Edit Reader: {{ reader.name }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update</button>
+        <a href="{% url 'view_readers' %}">Cancel</a>
+    </form>
+</body>
+</html>

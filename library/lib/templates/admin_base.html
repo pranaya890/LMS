@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel - My Library</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin:0; padding:0; }
+        header { background-color: #34495e; color: white; padding: 10px 20px; }
+        nav a { color: white; margin-right: 15px; text-decoration: none; }
+        main { padding: 20px; margin-bottom: 50px; }
+        footer { background-color: #34495e; color: white; text-align: center; padding: 10px; position: fixed; width: 100%; bottom: 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📚 Admin Panel</h1>
+    <nav>
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'view_books' %}">Books</a>
+        <a href="{% url 'view_readers' %}">Readers</a>
+        <a href="{% url 'view_issues' %}">Issued Books</a>
+        <a href="{% url 'view_fines' %}">Fines</a>
+        <a href="{% url 'admin_issue_requests' %}">Issue Requests</a>
+        <a href="{% url 'view_categories' %}">Categories</a>
+        <a href="{% url 'logout_admin' %}">Logout</a>
+    </nav>
+</header>
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer>
+    &copy; {% now "Y" %} My Library Admin. All rights reserved.
+</footer>
+
+</body>
+</html>

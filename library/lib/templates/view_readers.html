@@ -1,0 +1,43 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Readers List</title>
+</head>
+<body>
+    <h2>All Readers</h2>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Date of Birth</th>
+                <th>Phone</th>
+                <th>Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reader in readers %}
+            <tr>
+                <td>{{ reader.reader_id }}</td>
+                <td><a href="{% url 'reader_details' reader.pk %}">{{ reader.name }}</a></td>
+                <td>{{ reader.date_of_birth }}</td>
+                <td>{{ reader.phone_number }}</td>
+                <td>{{ reader.address }}</td>
+                <td>
+                <a href="{% url 'edit_reader' reader.pk %}">Edit</a> |
+                <a href="{% url 'delete_reader' reader.pk %}">Delete</a>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No readers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+{% endblock %}

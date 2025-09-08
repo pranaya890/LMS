@@ -1,0 +1,53 @@
+{% extends 'admin_base.html' %}
+{% block content%}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fines</title>
+</head>
+<body>
+    <h2>All Fines</h2>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Reader</th>
+                <th>Book</th>
+                <th>Amount</th>
+                <th>Calculated Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fine in fines %}
+            <tr>
+                <td>{{ fine.issue.reader.name }}</td>
+                <td>{{ fine.issue.book.name }}</td>
+                <td>{{ fine.amount }}</td>
+                <td>{{ fine.calculated_date }}</td>
+                <td>
+                {% if fine.paid %}
+                    Paid
+                {% else %}
+                    Unpaid
+                {% endif %}
+                </td>
+
+                <td>
+                    {% if not fine.paid %}
+                        <a href="{% url 'pay_fine' fine.pk %}">Pay</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No fines found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+{% endblock %}

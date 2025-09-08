@@ -1,0 +1,15 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div style="display: flex; gap: 20px;">
+    <div style="padding: 20px; border: 1px solid #ccc; border-radius: 8px; width: 200px; text-align: center;">
+        <h3>Total Books</h3>
+        <p>{{ total_books }}</p>
+    </div>
+
+    <div style="padding: 20px; border: 1px solid #ccc; border-radius: 8px; width: 200px; text-align: center;">
+        <h3>Total Readers</h3>
+        <p>{{ total_readers }}</p>
+    </div>
+</div>
+
+{% endblock %}

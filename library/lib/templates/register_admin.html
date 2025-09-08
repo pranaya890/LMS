@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Register as Admin</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Register</button>
+    <a href="{% url 'login_admin' %}">Already have an account? Login</a>
+</form>
+{% endblock %}

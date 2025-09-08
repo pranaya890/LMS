@@ -1,0 +1,27 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Return Book</title>
+</head>
+<body>
+    <h2>Return Book</h2>
+    <p>Reader: {{ issue.reader.name }}</p>
+    <p>Book: {{ issue.book.name }}</p>
+    <p>Issued Date: {{ issue.issued_date }}</p>
+    <p>Due Date: {{ issue.due_date }}</p>
+
+    {% if issue.returned_date %}
+        <p><strong>Already Returned on {{ issue.returned_date }}</strong></p>
+        <a href="{% url 'view_issues' %}">Back to Issued Books</a>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Mark as Returned</button>
+            <a href="{% url 'view_issues' %}">Cancel</a>
+        </form>
+    {% endif %}
+</body>
+</html>
+{% endblock %}

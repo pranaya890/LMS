@@ -1,0 +1,34 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<h2>Pending Issue Requests</h2>
+
+{% if pending_requests %}
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Reader</th>
+            <th>Book</th>
+            <th>Request Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in pending_requests %}
+        <tr>
+            <td>{{ req.reader.name }}</td>
+            <td>{{ req.book.name }}</td>
+            <td>{{ req.request_date }}</td>
+            <td>
+                <a href="{% url 'approve_request' req.pk %}">Approve</a> |
+                <a href="{% url 'reject_request' req.pk %}">Reject</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No pending requests.</p>
+{% endif %}
+
+{% endblock %}

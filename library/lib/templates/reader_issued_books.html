@@ -1,0 +1,30 @@
+{% extends 'reader_base.html' %}
+
+{% block content %}
+<h2>My Issued Books</h2>
+
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Book Name</th>
+            <th>Issued Date</th>
+            <th>Due Date</th>
+            <th>Returned Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for issue in issued_books %}
+        <tr>
+            <td>{{ issue.book.name }}</td>
+            <td>{{ issue.issued_date }}</td>
+            <td>{{ issue.due_date }}</td>
+            <td>{% if issue.returned_date %}{{ issue.returned_date }}{% else %}Not Returned{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">You have no issued books.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

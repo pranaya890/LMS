@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reader Details</title>
+</head>
+<body>
+    <h2>Reader Details</h2>
+    <p><strong>ID:</strong> {{ reader.reader_id }}</p>
+    <p><strong>Name:</strong> {{ reader.name }}</p>
+    <p><strong>Date of Birth:</strong> {{ reader.date_of_birth }}</p>
+    <p><strong>Phone:</strong> {{ reader.phone_number }}</p>
+    <p><strong>Address:</strong> {{ reader.address }}</p>
+
+    <h3>Issued Books</h3>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Issued Date</th>
+                <th>Due Date</th>
+                <th>Returned Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issues %}
+            <tr>
+                <td>{{ issue.book.name }}</td>
+                <td>{{ issue.issued_date }}</td>
+                <td>{{ issue.due_date }}</td>
+                <td>
+                    {% if issue.returned_date %}
+                        {{ issue.returned_date }}
+                    {% else %}
+                        Not Returned
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No books issued.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>
+        <a href="{% url 'edit_reader' reader.pk %}">Edit</a> |
+        <a href="{% url 'delete_reader' reader.pk %}">Delete</a> |
+        <a href="{% url 'view_readers' %}">Back to Readers List</a>
+    </p>
+</body>
+</html>
