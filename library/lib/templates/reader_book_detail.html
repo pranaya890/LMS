@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ book.name }}</title>
+</head>
+<body>
+    <h2>{{ book.name }}</h2>
+    <p><strong>Author:</strong> {{ book.author }}</p>
+    <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+    <p><strong>Category:</strong> {{ book.category.name }}</p>
+    <p><strong>Available Stock:</strong> {{ book.number_in_stock }}</p>
+
+    {% if book.image %}
+        <img src="{{ book.image.url }}" alt="{{ book.name }}" width="200">
+    {% endif %}
+
+    <!-- Optional: Add a button to issue or reserve if logged in -->
+</body>
+</html>

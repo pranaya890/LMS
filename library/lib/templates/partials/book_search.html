@@ -1,0 +1,77 @@
+<form id="book-search-form" style="position: relative;">
+    <input type="text" name="q" id="book-search-input" placeholder="Search books..." autocomplete="off" style="width: 100%;">
+    
+    <select name="category" id="book-search-category">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="book-search-results"></div>
+</form>
+
+<style>
+#book-search-results {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+#book-search-results div {
+    padding: 8px;
+    cursor: pointer;
+}
+#book-search-results div:hover {
+    background-color: #f0f0f0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('book-search-input');
+    const category = document.getElementById('book-search-category');
+    const resultsDiv = document.getElementById('book-search-results');
+
+    function fetchBooks() {
+        const query = input.value;
+        const catId = category.value;
+
+        if(query.length < 1) {
+            resultsDiv.innerHTML = '';
+            return;
+        }
+
+        fetch(`/ajax/search-books/?q=${query}&category=${catId}`)
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML = '';
+                if(data.books.length) {
+                    data.books.forEach(book => {
+                        const div = document.createElement('div');
+                        div.textContent = `${book.name} by ${book.author}`;
+                        div.addEventListener('click', () => {
+                            console.log("Redirecting to:", book.url); // debug
+                            window.location.href = book.url;
+                        });
+                        resultsDiv.appendChild(div);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<div>No books found.</div>';
+                }
+            });
+    }
+
+    input.addEventListener('input', fetchBooks);
+    category.addEventListener('change', fetchBooks);
+
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('book-search-form').contains(e.target)) {
+            resultsDiv.innerHTML = '';
+        }
+    });
+});
+</script>

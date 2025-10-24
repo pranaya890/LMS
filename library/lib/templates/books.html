@@ -1,6 +1,7 @@
 {% extends 'reader_base.html' %}
 
 {% block content %}
+{% include 'partials/book_search.html' %}
 {% if messages %}
     {% for message in messages %}
         <div class="alert alert-info">
@@ -24,7 +25,9 @@
     <tbody>
         {% for book in books %}
         <tr>
-            <td>{{ book.name }}</td>
+            <td>
+                <a href="{% url 'reader_book_detail' book.pk %}">{{ book.name }}</a>
+            </td>
             <td>{{ book.author }}</td>
             <td>{{ book.category }}</td>
             <td>{{ book.isbn }}</td>

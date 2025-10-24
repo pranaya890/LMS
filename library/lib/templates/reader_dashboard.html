@@ -42,7 +42,7 @@
             <tr>
                 <th>Book</th>
                 <th>Amount</th>
-                <th>Action</th>
+                <!-- <th>Action</th> -->
             </tr>
         </thead>
         <tbody>
@@ -50,7 +50,7 @@
             <tr>
                 <td>{{ fine.issue.book.name }}</td>
                 <td>{{ fine.amount }}</td>
-                <td><a href="{% url 'pay_fine' fine.pk %}">Pay</a></td>
+                <!-- <td><a href="{% url 'pay_fine' fine.pk %}">Pay</a></td> -->
             </tr>
             {% empty %}
             <tr>

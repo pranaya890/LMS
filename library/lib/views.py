@@ -8,11 +8,18 @@ from django.utils.timezone import now
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import timedelta,date
 from django.contrib import messages
+from django.http import JsonResponse
+from django.urls import reverse
+
 
 
 
 def home(request):
-    return render(request, 'home.html', {'year': now().year})
+    categories = Category.objects.all()
+    return render(request, 'home.html', {
+        'year': now().year,
+        'categories': categories
+    })
 
 def public_books(request):
     books = Book.objects.all().order_by('name')  # sorted alphabetically
@@ -61,19 +68,6 @@ def view_books(request):
     return render(request, 'view_books.html', context)
 
 
-def search_books(request):
-    query = request.GET.get('q')
-    if query:
-        books = Book.objects.filter(
-            Q(name__icontains=query) |
-            Q(author__icontains=query) |
-            Q(isbn__icontains=query) |
-            Q(category__name__icontains=query)
-        )
-    else:
-        books = Book.objects.none()  # no query, show nothing
-
-    return render(request, 'search_books.html', {'books': books, 'query': query})  
 
 def book_details(request, pk):
     book = get_object_or_404(Book, pk=pk)  # fetch book or return 404 if not found
@@ -122,37 +116,44 @@ def reader_details(request, pk):
     return render(request, 'reader_details.html', {'reader': reader, 'issues': issues})
 
 ###  Issue or borrow related
-
 def issue_book(request):
     if request.method == 'POST':
         form = IssueForm(request.POST)
         if form.is_valid():
             issue = form.save(commit=False)
 
-            # ✅ Prevent duplicate issue: same reader + same book + not returned
+            #  Prevent duplicate issue: same reader + same book + not returned
             if Issue.objects.filter(reader=issue.reader, book=issue.book, returned_date__isnull=True).exists():
                 form.add_error('book', f"{issue.reader.name} already has '{issue.book.name}' issued.")
             else:
-                # ✅ reduce stock when a book is issued
-                if issue.book.number_in_stock > 0:
-                    issue.book.number_in_stock -= 1
-                    issue.book.save()
-                    
-                    # set issued_date and due_date if not provided
-                    if not issue.issued_date:
-                        issue.issued_date = date.today()
-                    if not issue.due_date:
-                        issue.due_date = date.today() + timedelta(days=14)
+                #  automatically set issued_date if not provided
+                if not issue.issued_date:
+                    issue.issued_date = date.today()
 
-                    issue.save()
-                    messages.success(request, f"'{issue.book.name}' issued to {issue.reader.name}.")
-                    return redirect('view_issues')
-                else:
-                    form.add_error('book', 'This book is out of stock!')
+                #  validate due_date
+                if not issue.due_date:
+                    issue.due_date = issue.issued_date + timedelta(days=14)  # default 2 weeks
+                elif issue.due_date <= issue.issued_date:
+                    form.add_error('due_date', 'Due date must be after today.')
+                elif issue.due_date > issue.issued_date + timedelta(days=30):
+                    form.add_error('due_date', 'Due date cannot exceed 30 days from today.')
+
+                # proceed if no due_date errors
+                if not form.errors:
+                    if issue.book.number_in_stock > 0:
+                        issue.book.number_in_stock -= 1
+                        issue.book.save()
+                        issue.save()
+                        messages.success(request, f"'{issue.book.name}' issued to {issue.reader.name}.")
+                        return redirect('view_issues')
+                    else:
+                        form.add_error('book', 'This book is out of stock!')
     else:
         form = IssueForm()
 
     return render(request, 'issue_book.html', {'form': form})
+
+
 
 def view_issues(request):
     issues = Issue.objects.all().order_by('-issued_date')  # latest first
@@ -261,7 +262,12 @@ def reader_view_books(request):
     books = Book.objects.all().order_by('name')
     return render(request, 'books.html', {'books': books})
 
-
+def reader_book_detail(request, pk):
+    """
+    View for a reader to see book details.
+    """
+    book = get_object_or_404(Book, pk=pk)
+    return render(request, 'reader_book_detail.html', {'book': book})
 
 def approve_request(request, request_id):
     admin_id = request.session.get('admin_id')
@@ -505,3 +511,41 @@ def delete_category(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     category.delete()
     return redirect('view_categories')
+
+### Searching books
+
+
+def ajax_search_books(request):
+    query = request.GET.get('q', '')
+    category_id = request.GET.get('category', '')
+
+    books = Book.objects.all()
+    if query:
+        books = books.filter(
+            Q(name__icontains=query) |
+            Q(author__icontains=query) |
+            Q(isbn__icontains=query)
+        )
+    if category_id:
+        books = books.filter(category_id=category_id)
+
+    data = []
+    for book in books:
+        # Check if user is authenticated and admin
+        if request.session.get('admin_id'):
+            url = reverse('book_details', args=[book.pk])  # admin book detail
+        else:
+            url = reverse('reader_book_detail', args=[book.pk])  # reader book detail
+
+        # Debug print
+        print(f"User: {request.user}, is_staff: {getattr(request.user, 'is_staff', False)}, Book URL: {url}")
+
+        data.append({
+            'name': book.name,
+            'author': book.author,
+            'pk': book.pk,
+            'url': url,
+            'stock': book.number_in_stock,
+        })
+
+    return JsonResponse({'books': data})

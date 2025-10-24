@@ -7,14 +7,16 @@ urlpatterns=[
     path('books/', views.view_books, name='view_books'),
     path('books/edit/<int:pk>/', views.edit_book, name='edit_book'),
     path('books/delete/<int:pk>/', views.delete_book, name='delete_book'),
-    path('books/search/', views.search_books, name='search_books'),
-    path('books/<int:pk>/', views.book_details, name='book_details'),
+    # path('books/search/', views.search_books, name='search_books'),
+    path('books/<int:pk>/', views.book_details, name='book_details'), #by using primary key
+    # path('books/<str:isbn>/', views.book_details, name='book_details'), # for isbn 
     path('all-books/', views.public_books, name='public_books'),#home page ko lagi
 
 
     #reader urls
     path('readers/', views.view_readers, name='view_readers'),
     #path('readers/add/', views.add_reader, name='add_reader'),
+    path('reader/books/<int:pk>/', views.reader_book_detail, name='reader_book_detail'),
     path('readers/<int:pk>/edit/', views.edit_reader, name='edit_reader'),
     path('readers/<int:pk>/delete/', views.delete_reader, name='delete_reader'),
     path('readers/<int:pk>/', views.reader_details, name='reader_details'),
@@ -50,7 +52,8 @@ urlpatterns=[
     path('admin/categories/<int:category_id>/edit/', views.edit_category, name='edit_category'),
     path('admin/categories/<int:category_id>/delete/', views.delete_category, name='delete_category'),
 
-
+    #search book
+    path('ajax/search-books/', views.ajax_search_books, name='ajax_search_books'),
 
 
 
