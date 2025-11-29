@@ -44,7 +44,7 @@
         </thead>
         <tbody>
             {% for book in books %}
-            <tr>
+            <tr {% if book.category %}data-category-id="{{ book.category.id }}"{% endif %}>
             <td>
                 <a href="{% url 'reader_book_detail' book.pk %}">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a>
             </td>

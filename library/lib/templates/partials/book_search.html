@@ -1,5 +1,16 @@
-<form id="book-search-form" style="position: relative;">
-    <input type="text" name="q" id="book-search-input" placeholder="Search books..." autocomplete="off" style="width: 100%;">
+<form id="book-search-form" style="position: relative; display:flex; gap:8px; align-items:center;">
+    <input type="text" name="q" id="book-search-input" placeholder="Search books..." autocomplete="off" style="flex:1;">
+    <div style="display:flex;align-items:center;gap:8px;">
+        <label for="filter-category-select" style="margin-right:6px;">Category</label>
+        <select id="filter-category-select" name="category">
+            <option value="">All Categories</option>
+            {% if categories %}
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            {% endif %}
+        </select>
+    </div>
 
 </form>
 
@@ -11,6 +22,7 @@ mark.highlight { background: #ffeb3b; padding: 0 2px; border-radius:2px; }
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('book-search-input');
+    const categorySelect = document.getElementById('filter-category-select');
 
     // Removed suggestion dropdown fetch; we only keep client-side highlighting for existing tables.
     // The AJAX live search used on the dedicated search page still calls /ajax/search-books/.
@@ -100,6 +112,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // wire highlighting alongside fetchBooks (both listen to input)
     input.addEventListener('input', debouncedHighlight);
+
+    // Category filtering: hide/show rows based on data-category-id attribute
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            const val = this.value;
+            const rows = document.querySelectorAll('table tbody tr');
+            rows.forEach(r => {
+                const cat = r.getAttribute('data-category-id') || '';
+                if (!val) {
+                    r.style.display = '';
+                } else {
+                    r.style.display = (cat === val) ? '' : 'none';
+                }
+            });
+        });
+    }
 
     // No inline suggestion box to clear anymore.
 });

@@ -44,7 +44,7 @@
         </thead>
         <tbody id="search-results-body">
             {% for book in books %}
-            <tr>
+            <tr {% if book.category %}data-category-id="{{ book.category.id }}"{% endif %}>
                 <td><a href="{% url 'book_details' book.pk %}" style="color:#2196F3;text-decoration:none;">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a></td>
                 <td>{{ book.isbn }}</td>
                 <td>{% if query %}{{ book.author|highlight:query }}{% else %}{{ book.author }}{% endif %}</td>
@@ -120,13 +120,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const rows = data.books.map(b => {
+                const dataAttr = b.category_id ? ` data-category-id="${escapeHtml(String(b.category_id))}"` : '';
                 const name = `<a href="${escapeHtml(b.url)}" style="color:#2196F3;text-decoration:none;">${highlightText(b.name, term)}</a>`;
                 const isbn = escapeHtml(b.isbn || '');
                 const author = highlightText(b.author || '', term);
                 const category = escapeHtml(b.category || '');
                 const stock = escapeHtml(String(b.stock || ''));
                 const img = b.image ? `<img src="${escapeHtml(b.image)}" alt="${escapeHtml(b.name)}" style="max-width:50px;max-height:50px;border-radius:4px;">` : 'No image';
-                return `<tr><td>${name}</td><td>${isbn}</td><td>${author}</td><td>${category}</td><td>${stock}</td><td>${img}</td></tr>`;
+                return `<tr${dataAttr}><td>${name}</td><td>${isbn}</td><td>${author}</td><td>${category}</td><td>${stock}</td><td>${img}</td></tr>`;
             }).join('');
             resultsBody.innerHTML = rows;
         } catch (e) {

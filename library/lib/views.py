@@ -64,13 +64,28 @@ def view_books(request):
     """
     books = Book.objects.all().order_by('name')  # optional: sort by name
     context = {
-        'books': books
+        'books': books,
+        'categories': Category.objects.all(),
     }
     return render(request, 'view_books.html', context)
 
 
 
 def book_details(request, pk):
+    # Render different detail pages depending on who is viewing:
+    # - Admins: show admin_book_details.html (with admin controls)
+    # - Logged-in reader: show reader_book_detail.html (reader-specific layout)
+    # - Anonymous/general visitor: show public book_details.html
+
+    # If admin session exists, reuse admin_book_details view
+    if request.session.get('admin_id'):
+        return admin_book_details(request, pk)
+
+    # If reader session exists, reuse reader_book_detail view
+    if request.session.get('reader_id'):
+        return reader_book_detail(request, pk)
+
+    # General visitor (not admin and not logged-in reader)
     book = get_object_or_404(Book, pk=pk)  # fetch book or return 404 if not found
     analytics = get_book_analytics_data(book, days=90)
     popular_books = get_popular_books(limit=3, exclude_book_id=pk)
@@ -298,7 +313,7 @@ def reader_dashboard(request):
 
 def reader_view_books(request):
     books = Book.objects.all().order_by('name')
-    return render(request, 'books.html', {'books': books})
+    return render(request, 'books.html', {'books': books, 'categories': Category.objects.all()})
 
 def reader_book_detail(request, pk):
     """
@@ -604,6 +619,7 @@ def ajax_search_books(request):
             'author': book.author,
             'isbn': getattr(book, 'isbn', ''),
             'category': book.category.name if book.category else '',
+            'category_id': book.category.id if book.category else '',
             'image': book.image.url if getattr(book, 'image', None) else '',
             'pk': book.pk,
             'url': url,

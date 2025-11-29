@@ -19,15 +19,6 @@
     
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
         <h2>📚 All Available Books</h2>
-        <div>
-            <label for="filter-category-select">Filter by category:</label>
-            <select id="filter-category-select">
-                <option value="">All Categories</option>
-                {% for cat in categories %}
-                    <option value="{{ cat.id }}">{{ cat.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
     </div>
     
     <table>
@@ -66,23 +57,6 @@
     </table>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sel = document.getElementById('filter-category-select');
-    if (!sel) return;
-    sel.addEventListener('change', function() {
-        const val = this.value;
-        const rows = document.querySelectorAll('table tbody tr');
-        rows.forEach(r => {
-            const cat = r.getAttribute('data-category-id') || '';
-            if (!val) {
-                r.style.display = '';
-            } else {
-                r.style.display = (cat === val) ? '' : 'none';
-            }
-        });
-    });
-});
-</script>
+<!-- Category filtering handled in the search partial (partials/book_search.html) -->
 
 {% endblock %}

@@ -44,8 +44,6 @@
         {% endif %}
 
         <div class="actions" style="margin-top:14px;">
-            <a href="{% url 'edit_book' book.pk %}">Edit</a>
-            <a href="{% url 'delete_book' book.pk %}">Delete</a>
             <a href="{% url 'book_description' book.pk %}">View Description</a>
             <a href="{% url 'public_books' %}">Back to Books</a>
         </div>
