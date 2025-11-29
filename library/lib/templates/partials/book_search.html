@@ -1,77 +1,106 @@
 <form id="book-search-form" style="position: relative;">
     <input type="text" name="q" id="book-search-input" placeholder="Search books..." autocomplete="off" style="width: 100%;">
-    
-    <select name="category" id="book-search-category">
-        <option value="">All Categories</option>
-        {% for cat in categories %}
-            <option value="{{ cat.id }}">{{ cat.name }}</option>
-        {% endfor %}
-    </select>
 
-    <div id="book-search-results"></div>
 </form>
 
+<!-- Removed inline dropdown suggestions per user request. Keeping only the search input and category select. -->
 <style>
-#book-search-results {
-    position: absolute;
-    background: white;
-    border: 1px solid #ccc;
-    width: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 1000;
-}
-#book-search-results div {
-    padding: 8px;
-    cursor: pointer;
-}
-#book-search-results div:hover {
-    background-color: #f0f0f0;
-}
+mark.highlight { background: #ffeb3b; padding: 0 2px; border-radius:2px; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('book-search-input');
-    const category = document.getElementById('book-search-category');
-    const resultsDiv = document.getElementById('book-search-results');
 
-    function fetchBooks() {
-        const query = input.value;
-        const catId = category.value;
+    // Removed suggestion dropdown fetch; we only keep client-side highlighting for existing tables.
+    // The AJAX live search used on the dedicated search page still calls /ajax/search-books/.
+    // This partial no longer performs its own fetch or renders inline suggestions.
 
-        if(query.length < 1) {
-            resultsDiv.innerHTML = '';
-            return;
-        }
-
-        fetch(`/ajax/search-books/?q=${query}&category=${catId}`)
-            .then(response => response.json())
-            .then(data => {
-                resultsDiv.innerHTML = '';
-                if(data.books.length) {
-                    data.books.forEach(book => {
-                        const div = document.createElement('div');
-                        div.textContent = `${book.name} by ${book.author}`;
-                        div.addEventListener('click', () => {
-                            console.log("Redirecting to:", book.url); // debug
-                            window.location.href = book.url;
-                        });
-                        resultsDiv.appendChild(div);
-                    });
-                } else {
-                    resultsDiv.innerHTML = '<div>No books found.</div>';
-                }
-            });
+    // Client-side live highlighting in existing result tables
+    // Debounced so it doesn't run excessively
+    function debounce(fn, delay) {
+        let t;
+        return function(...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), delay);
+        };
     }
 
-    input.addEventListener('input', fetchBooks);
-    category.addEventListener('change', fetchBooks);
+    // Escape regex special chars
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 
-    document.addEventListener('click', function(e) {
-        if (!document.getElementById('book-search-form').contains(e.target)) {
-            resultsDiv.innerHTML = '';
-        }
-    });
+    // Highlight matches inside table cells for relevant columns
+    function highlightInTables(query) {
+        // normalize
+        const q = (query || '').trim();
+        // find all tables on page that contain search results
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            const thead = table.querySelector('thead');
+            if (!thead) return;
+            // map header text to index
+            const headers = Array.from(thead.querySelectorAll('th')).map(th => th.textContent.trim().toLowerCase());
+            // columns we want to highlight if present
+            const targets = [];
+            ['name','author','category','description','book name'].forEach(key => {
+                const idx = headers.findIndex(h => h.includes(key));
+                if (idx > -1) targets.push(idx);
+            });
+
+            if (targets.length === 0) return;
+
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                targets.forEach(i => {
+                    if (i >= cells.length) return;
+                    const cell = cells[i];
+                    // store original text to avoid cumulative mark-ups
+                    if (!cell.dataset.originalText) {
+                        cell.dataset.originalText = cell.textContent;
+                    }
+                    const original = cell.dataset.originalText;
+                    if (!q) {
+                        cell.innerHTML = escapeHtml(original);
+                        return;
+                    }
+                    const pattern = new RegExp(escapeRegExp(q), 'ig');
+                    const highlighted = escapeHtml(original).replace(pattern, match => `<mark class="highlight">${match}</mark>`);
+                    cell.innerHTML = highlighted;
+                });
+                    });
+
+            // After highlighting, move rows that contain matches (mark.highlight) to the top
+            try {
+                const tbody = table.querySelector('tbody');
+                if (tbody) {
+                    const allRows = Array.from(tbody.querySelectorAll('tr'));
+                    const matchedRows = allRows.filter(r => r.querySelector('mark.highlight'));
+                    const otherRows = allRows.filter(r => !r.querySelector('mark.highlight'));
+                    // append matched first, then others (preserves relative order)
+                    matchedRows.forEach(r => tbody.appendChild(r));
+                    otherRows.forEach(r => tbody.appendChild(r));
+                }
+            } catch (e) {
+                // no-op on errors
+            }
+        });
+    }
+
+    // simple HTML escape
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    const debouncedHighlight = debounce(function() {
+        highlightInTables(input.value);
+    }, 180);
+
+    // wire highlighting alongside fetchBooks (both listen to input)
+    input.addEventListener('input', debouncedHighlight);
+
+    // No inline suggestion box to clear anymore.
 });
 </script>

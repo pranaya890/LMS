@@ -1,14 +1,24 @@
 {% extends 'admin_base.html' %}
+
 {% block content %}
-<div style="display: flex; gap: 20px;">
-    <div style="padding: 20px; border: 1px solid #ccc; border-radius: 8px; width: 200px; text-align: center;">
-        <h3>Total Books</h3>
-        <p>{{ total_books }}</p>
+<style>
+  .dashboard-container { margin:24px; display:flex; gap:20px; flex-wrap:wrap; }
+  .stat-card { padding:24px; border-radius:8px; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); min-width:200px; text-align:center; }
+  .stat-card h3 { margin:0 0 16px 0; color:#555; font-size:16px; }
+  .stat-value { font-size:32px; font-weight:bold; color:#2196F3; }
+  .stat-card-books { border-left:4px solid #4CAF50; }
+  .stat-card-readers { border-left:4px solid #ff9800; }
+</style>
+
+<div class="dashboard-container">
+    <div class="stat-card stat-card-books">
+        <h3>📚 Total Books</h3>
+        <div class="stat-value">{{ total_books }}</div>
     </div>
 
-    <div style="padding: 20px; border: 1px solid #ccc; border-radius: 8px; width: 200px; text-align: center;">
-        <h3>Total Readers</h3>
-        <p>{{ total_readers }}</p>
+    <div class="stat-card stat-card-readers">
+        <h3>👥 Total Readers</h3>
+        <div class="stat-value">{{ total_readers }}</div>
     </div>
 </div>
 

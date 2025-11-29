@@ -2,25 +2,40 @@
 
 {% block content %}
 <style>
-  .desc-card { max-width:800px; margin:24px auto; padding:20px; border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .desc-card h2 { margin-top:0; }
+  .desc-card { max-width:800px; margin:24px auto; padding:24px; border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .desc-card h2 { margin-top:0; color:#2c3e50; border-bottom:2px solid #2196F3; padding-bottom:12px; }
+  .meta-info { display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin:16px 0; }
+  .meta-item { }
+  .meta-item strong { color:#2c3e50; }
+  .description-text { background:#f9f9f9; padding:16px; border-radius:4px; line-height:1.6; margin:20px 0; }
+  .back-link { margin-top:24px; }
+  .back-link a { color:#2196F3; text-decoration:none; }
+  .back-link a:hover { text-decoration:underline; }
 </style>
 
 <div class="desc-card">
-  <h2>{{ book.name }}</h2>
-  <p><strong>Author:</strong> {{ book.author }}</p>
-  <p><strong>ISBN:</strong> {{ book.isbn }}</p>
-  <p><strong>Category:</strong> {{ book.category.name }}</p>
-  <p><strong>Available Stock:</strong> {{ book.number_in_stock }}</p>
-  <p><strong>Rating:</strong> {{ book.rating }}</p>
+  <h2>📚 {{ book.name }}</h2>
+  <div class="meta-info">
+    <div class="meta-item"><strong>Author:</strong> {{ book.author }}</div>
+    <div class="meta-item"><strong>ISBN:</strong> {{ book.isbn }}</div>
+    <div class="meta-item"><strong>Category:</strong> {{ book.category.name }}</div>
+    <div class="meta-item"><strong>Stock:</strong> {{ book.number_in_stock }}</div>
+    <div class="meta-item"><strong>Rating:</strong> ⭐ {{ book.rating }}/5.0</div>
+  </div>
+  
   <hr>
-  {% if book.description %}
-    <div>{{ book.description|linebreaksbr }}</div>
-  {% else %}
-    <div><em>No description available for this book.</em></div>
-  {% endif %}
+  
+  <div class="description-text">
+    {% if book.description %}
+      {{ book.description|linebreaksbr }}
+    {% else %}
+      <em>No description available for this book.</em>
+    {% endif %}
+  </div>
 
-  <p style="margin-top:16px;"><a href="{% url 'book_details' book.pk %}">&larr; Back to details</a></p>
+  <div class="back-link">
+    <a href="{% url 'book_details' book.pk %}">&larr; Back to details</a>
+  </div>
 </div>
 
 {% endblock %}

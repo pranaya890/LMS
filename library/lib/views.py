@@ -23,7 +23,8 @@ def home(request):
 
 def public_books(request):
     books = Book.objects.all().order_by('name')  # sorted alphabetically
-    return render(request, 'public_books.html', {'books': books})
+    categories = Category.objects.all()
+    return render(request, 'public_books.html', {'books': books, 'categories': categories})
 
 
 def add_book(request):
@@ -575,14 +576,17 @@ def ajax_search_books(request):
     category_id = request.GET.get('category', '')
 
     books = Book.objects.all()
+    # Restrict AJAX search to book name only (case-insensitive)
     if query:
         books = books.filter(
-            Q(name__icontains=query) |
-            Q(author__icontains=query) |
-            Q(isbn__icontains=query)
+            Q(name__icontains=query)
         )
     if category_id:
         books = books.filter(category_id=category_id)
+
+    # If no query provided, return books ordered alphabetically by name for consistent results
+    if not query:
+        books = books.order_by('name')
 
     data = []
     for book in books:
@@ -598,6 +602,9 @@ def ajax_search_books(request):
         data.append({
             'name': book.name,
             'author': book.author,
+            'isbn': getattr(book, 'isbn', ''),
+            'category': book.category.name if book.category else '',
+            'image': book.image.url if getattr(book, 'image', None) else '',
             'pk': book.pk,
             'url': url,
             'stock': book.number_in_stock,

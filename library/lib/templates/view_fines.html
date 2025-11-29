@@ -1,13 +1,23 @@
 {% extends 'admin_base.html' %}
-{% block content%}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Fines</title>
-</head>
-<body>
-    <h2>All Fines</h2>
-    <table border="1" cellpadding="5">
+
+{% block content %}
+<style>
+  .view-container { margin:24px; }
+  h2 { color:#2c3e50; margin-bottom:20px; }
+  table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+  th { background:#ff9800; color:white; padding:12px; text-align:left; }
+  td { padding:12px; border-bottom:1px solid #ddd; }
+  tr:hover { background:#f5f5f5; }
+  .paid { color:#4CAF50; font-weight:bold; }
+  .unpaid { color:#d32f2f; font-weight:bold; }
+  a { color:#2196F3; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .dash { color:#999; }
+</style>
+
+<div class="view-container">
+    <h2>💰 All Fines</h2>
+    <table>
         <thead>
             <tr>
                 <th>Reader</th>
@@ -23,31 +33,30 @@
             <tr>
                 <td>{{ fine.issue.reader.name }}</td>
                 <td>{{ fine.issue.book.name }}</td>
-                <td>{{ fine.amount }}</td>
+                <td>₹{{ fine.amount }}</td>
                 <td>{{ fine.calculated_date }}</td>
                 <td>
-                {% if fine.paid %}
-                    Paid
-                {% else %}
-                    Unpaid
-                {% endif %}
+                    {% if fine.paid %}
+                        <span class="paid">✓ Paid</span>
+                    {% else %}
+                        <span class="unpaid">⚠ Unpaid</span>
+                    {% endif %}
                 </td>
-
                 <td>
                     {% if not fine.paid %}
-                        <a href="{% url 'pay_fine' fine.pk %}">Pay</a>
+                        <a href="{% url 'pay_fine' fine.pk %}">💳 Pay</a>
                     {% else %}
-                        -
+                        <span class="dash">-</span>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No fines found.</td>
+                <td colspan="6" style="text-align:center;color:#999;">No fines found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</body>
-</html>
+</div>
+
 {% endblock %}

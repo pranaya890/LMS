@@ -1,17 +1,31 @@
 {% extends 'reader_base.html' %}
-{% block content %}
-<!DOCTYPE html>
-<html>
-<body>
-<main>
-    <h2>Welcome, {{ reader.name }}</h2>
-    <p><strong>Reader ID:</strong> {{ reader.reader_id }}</p>
-    <p><strong>Date of Birth:</strong> {{ reader.date_of_birth }}</p>
-    <p><strong>Phone:</strong> {{ reader.phone_number }}</p>
-    <p><strong>Address:</strong> {{ reader.address }}</p>
 
-    <h3>Your Issued Books</h3>
-    <table border="1" cellpadding="5">
+{% block content %}
+<style>
+  .dashboard-container { margin:24px; }
+  h2 { color:#2c3e50; margin-bottom:24px; }
+  h3 { color:#555; margin-top:24px; margin-bottom:16px; }
+  .info-card { background:#f9f9f9; padding:16px; border-radius:4px; margin-bottom:20px; }
+  .info-item { margin:8px 0; line-height:1.8; }
+  table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-bottom:20px; }
+  th { background:#4CAF50; color:white; padding:12px; text-align:left; }
+  td { padding:12px; border-bottom:1px solid #ddd; }
+  tr:hover { background:#f5f5f5; }
+  .not-returned { color:#ff9800; }
+</style>
+
+<div class="dashboard-container">
+    <h2>👋 Welcome, {{ reader.name }}</h2>
+    
+    <div class="info-card">
+        <div class="info-item"><strong>Reader ID:</strong> {{ reader.reader_id }}</div>
+        <div class="info-item"><strong>Date of Birth:</strong> {{ reader.date_of_birth }}</div>
+        <div class="info-item"><strong>Phone:</strong> {{ reader.phone_number }}</div>
+        <div class="info-item"><strong>Address:</strong> {{ reader.address }}</div>
+    </div>
+
+    <h3>📚 Your Issued Books</h3>
+    <table>
         <thead>
             <tr>
                 <th>Book</th>
@@ -26,41 +40,43 @@
                 <td>{{ issue.book.name }}</td>
                 <td>{{ issue.issued_date }}</td>
                 <td>{{ issue.due_date }}</td>
-                <td>{% if issue.returned_date %}{{ issue.returned_date }}{% else %}Not Returned{% endif %}</td>
+                <td>
+                    {% if issue.returned_date %}
+                        {{ issue.returned_date }}
+                    {% else %}
+                        <span class="not-returned">Not Returned</span>
+                    {% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4">You have no issued books.</td>
+                <td colspan="4" style="text-align:center;color:#999;">You have no issued books.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <h3>Your Pending Fines</h3>
-    <table border="1" cellpadding="5">
+    <h3>💰 Your Pending Fines</h3>
+    <table>
         <thead>
             <tr>
                 <th>Book</th>
                 <th>Amount</th>
-                <!-- <th>Action</th> -->
             </tr>
         </thead>
         <tbody>
             {% for fine in fines %}
             <tr>
                 <td>{{ fine.issue.book.name }}</td>
-                <td>{{ fine.amount }}</td>
-                <!-- <td><a href="{% url 'pay_fine' fine.pk %}">Pay</a></td> -->
+                <td>₹{{ fine.amount }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3">No pending fines.</td>
+                <td colspan="2" style="text-align:center;color:#999;">No pending fines.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 
-</main>
-</body>
-</html>
 {% endblock %}

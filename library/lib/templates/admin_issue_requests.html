@@ -1,34 +1,50 @@
 {% extends 'admin_base.html' %}
 
 {% block content %}
-<h2>Pending Issue Requests</h2>
+<style>
+  .view-container { margin:24px; }
+  h2 { color:#2c3e50; margin-bottom:20px; }
+  table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+  th { background:#2196F3; color:white; padding:12px; text-align:left; }
+  td { padding:12px; border-bottom:1px solid #ddd; }
+  tr:hover { background:#f5f5f5; }
+  a { text-decoration:none; margin:0 5px; }
+  .approve { color:#4CAF50; }
+  .reject { color:#d32f2f; }
+  .approve:hover, .reject:hover { text-decoration:underline; }
+  .empty { color:#999; text-align:center; padding:20px; }
+</style>
 
-{% if pending_requests %}
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Reader</th>
-            <th>Book</th>
-            <th>Request Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for req in pending_requests %}
-        <tr>
-            <td>{{ req.reader.name }}</td>
-            <td>{{ req.book.name }}</td>
-            <td>{{ req.request_date }}</td>
-            <td>
-                <a href="{% url 'approve_request' req.pk %}">Approve</a> |
-                <a href="{% url 'reject_request' req.pk %}">Reject</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No pending requests.</p>
-{% endif %}
+<div class="view-container">
+    <h2>📋 Pending Issue Requests</h2>
+
+    {% if pending_requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Reader</th>
+                    <th>Book</th>
+                    <th>Request Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in pending_requests %}
+                <tr>
+                    <td>{{ req.reader.name }}</td>
+                    <td>{{ req.book.name }}</td>
+                    <td>{{ req.request_date }}</td>
+                    <td>
+                        <a href="{% url 'approve_request' req.pk %}" class="approve">✓ Approve</a> |
+                        <a href="{% url 'reject_request' req.pk %}" class="reject">✗ Reject</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty">No pending requests.</div>
+    {% endif %}
+</div>
 
 {% endblock %}

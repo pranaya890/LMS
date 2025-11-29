@@ -1,33 +1,26 @@
 {% extends 'admin_base.html' %}
+
 {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Issued Books</title>
-    <style>
-        .overdue {
-            background-color: #ffcccc; /* light red for overdue */
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        a {
-            margin: 0 5px;
-        }
-    </style>
-</head>
-<body>
-    <h2>All Issued Books</h2>
-    <a href="{% url 'issue_book' %}">➕ Issue New Book</a> 
+<style>
+  .view-container { margin:24px; }
+  h2 { color:#2c3e50; margin-bottom:20px; }
+  .add-btn { display:inline-block; margin-bottom:16px; padding:10px 16px; background:#2196F3; color:white; text-decoration:none; border-radius:4px; }
+  .add-btn:hover { background:#0b7dda; }
+  table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+  th { background:#2196F3; color:white; padding:12px; text-align:left; }
+  td { padding:12px; border-bottom:1px solid #ddd; }
+  tr:hover { background:#f5f5f5; }
+  .overdue { background-color:#ffebee !important; }
+  .overdue td { color:#d32f2f; font-weight:bold; }
+  a { color:#2196F3; text-decoration:none; margin:0 5px; }
+  a:hover { text-decoration:underline; }
+  .returned { color:#4CAF50; }
+</style>
+
+<div class="view-container">
+    <h2>📤 All Issued Books</h2>
+    <a href="{% url 'issue_book' %}" class="add-btn">➕ Issue New Book</a>
+    
     <table>
         <thead>
             <tr>
@@ -50,24 +43,24 @@
                     {% if issue.returned_date %}
                         {{ issue.returned_date }}
                     {% else %}
-                        Not Returned
+                        <span style="color:#ff9800;">Not Returned</span>
                     {% endif %}
                 </td>
                 <td>
                     {% if not issue.returned_date %}
-                        <a href="{% url 'return_book' issue.pk %}">Return</a>
+                        <a href="{% url 'return_book' issue.pk %}">📚 Return</a>
                     {% else %}
-                        Returned
+                        <span class="returned">✓ Returned</span>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No books have been issued yet.</td>
+                <td colspan="6" style="text-align:center;color:#999;">No books have been issued yet.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</body>
-</html>
-{% endblock%}
+</div>
+
+{% endblock %}

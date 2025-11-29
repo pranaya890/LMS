@@ -1,7 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% include 'partials/book_search.html' %}
-<h2>Welcome to My Library</h2>
-<p>Explore books, track issued books, manage fines, and more!</p>
+<style>
+  .home-container { margin:24px auto; max-width:900px; }
+  .welcome-card { background:white; padding:32px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1); text-align:center; }
+  h2 { color:#2c3e50; font-size:28px; margin-bottom:16px; }
+  .welcome-card p { color:#666; font-size:18px; line-height:1.6; }
+</style>
+
+<div class="home-container">
+  <!-- search bar removed from homepage as requested -->
+    <div class="welcome-card">
+        <h2>📚 Welcome to My Library</h2>
+        <p>Explore books, track issued books, manage fines, and more!</p>
+    </div>
+</div>
+
 {% endblock %}
