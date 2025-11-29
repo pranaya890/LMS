@@ -5,7 +5,17 @@ from .models import Book, Reader, Issue,Admin
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['name', 'isbn', 'image', 'author', 'category', 'number_in_stock', 'description']
+        fields = ['name', 'isbn', 'image', 'author', 'category', 'number_in_stock', 'description', 'rating']
+        widgets = {
+            'rating': forms.NumberInput(attrs={
+                'type': 'number',
+                'min': '1.0',
+                'max': '5.0',
+                'step': '0.1',
+                'placeholder': 'Enter rating (1.0 - 5.0)',
+                'class': 'form-control'
+            })
+        }
 
 # def view_books(request):
 #     books = Book.objects.all()  # fetch all books

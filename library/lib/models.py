@@ -24,7 +24,7 @@ class Book(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='books')
     number_in_stock = models.PositiveIntegerField(default=0)  # Available copies
     description = models.TextField(blank=True, null=True, default="No description available")
-    rating = models.IntegerField(default=4)  
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.0, validators=[MinValueValidator(1.0), MaxValueValidator(5.0)])  # Rating with 1 decimal place
 
     def __str__(self):
         return f"{self.name} ({self.isbn})"
