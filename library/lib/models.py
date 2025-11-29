@@ -1,9 +1,7 @@
 from django.db import models
-from django.utils import timezone
 from datetime import date, timedelta
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.models import User
-from django.db.models import Avg
+
     
 
 
@@ -118,15 +116,3 @@ class BookIssuanceRecord(models.Model):
         return f"{self.book.name} - {self.date}: {self.quantity_issued} issued"
     
 
-# class BookRating(models.Model):
-#     book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='ratings')
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     rating = models.PositiveIntegerField(
-#         validators=[MinValueValidator(1), MaxValueValidator(5)]
-#     )
-
-#     class Meta:
-#         unique_together = ('book', 'user')  # user can rate a book only once
-
-#     def __str__(self):
-#         return f"{self.book.name} - {self.user.username}: {self.rating}"

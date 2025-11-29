@@ -10,6 +10,10 @@ from datetime import timedelta,date
 from django.contrib import messages
 from django.urls import reverse
 import json
+from django.conf import settings
+
+# maximum number of books a reader can have at once (including pending requests)
+MAX_ISSUED_PER_READER = getattr(settings, 'MAX_ISSUED_PER_READER', 5)
 
 
 
@@ -336,6 +340,20 @@ def approve_request(request, request_id):
     req = get_object_or_404(IssueRequest, pk=request_id, approved=False, rejected=False)
     book = req.book
     reader = req.reader
+    # Enforce per-reader limit: count currently issued books and pending requests
+    current_issued = Issue.objects.filter(reader=reader, returned_date__isnull=True).count()
+    current_pending = IssueRequest.objects.filter(reader=reader, approved=False, rejected=False).count()
+    total_count = current_issued + current_pending
+
+    # If total already exceeds the allowed maximum, reject approval
+    if total_count > MAX_ISSUED_PER_READER:
+        messages.error(request, (
+            f"Cannot approve request: {reader.name} already has {total_count} books/pending requests, "
+            f"which exceeds the limit of {MAX_ISSUED_PER_READER}."
+        ))
+        req.rejected = True
+        req.save()
+        return redirect('admin_issue_requests')
 
     # 🚨 Check if reader already has this book issued
     if Issue.objects.filter(reader=reader, book=book, returned_date__isnull=True).exists():
@@ -381,6 +399,16 @@ def issue_request(request, book_id):
 
     reader = get_object_or_404(Reader, id=reader_id)
     book = get_object_or_404(Book, id=book_id)
+
+    # Enforce per-reader limit: current issued books + pending requests must be < MAX
+    current_issued = Issue.objects.filter(reader=reader, returned_date__isnull=True).count()
+    current_pending = IssueRequest.objects.filter(reader=reader, approved=False, rejected=False).count()
+    if current_issued + current_pending >= MAX_ISSUED_PER_READER:
+        messages.error(request, (
+            f"You cannot request more books. You already have {current_issued} issued and {current_pending} pending "
+            f"(limit is {MAX_ISSUED_PER_READER}). Return a book or cancel a pending request first."
+        ))
+        return redirect('reader_view_books')
 
     # ✅ Restrict duplicate issued books
     if Issue.objects.filter(reader=reader, book=book, returned_date__isnull=True).exists():
@@ -484,6 +512,20 @@ def approve_request(request, request_id):
     req = get_object_or_404(IssueRequest, pk=request_id, approved=False, rejected=False)
     book = req.book
     reader = req.reader
+    # Enforce per-reader limit: count currently issued books and pending requests
+    current_issued = Issue.objects.filter(reader=reader, returned_date__isnull=True).count()
+    current_pending = IssueRequest.objects.filter(reader=reader, approved=False, rejected=False).count()
+    total_count = current_issued + current_pending
+
+    # If total already exceeds the allowed maximum, reject approval
+    if total_count > MAX_ISSUED_PER_READER:
+        messages.error(request, (
+            f"Cannot approve request: {reader.name} already has {total_count} books/pending requests, "
+            f"which exceeds the limit of {MAX_ISSUED_PER_READER}."
+        ))
+        req.rejected = True
+        req.save()
+        return redirect('admin_issue_requests')
 
     #  Check if reader already has this book issued
     if Issue.objects.filter(reader=reader, book=book, returned_date__isnull=True).exists():
@@ -630,36 +672,7 @@ def ajax_search_books(request):
 
 
 
-# def rate_book(request, book_id):
-#     book = get_object_or_404(Book, id=book_id)
-
-#     # Check if user already rated this book
-#     existing_rating = BookRating.objects.filter(book=book, user=request.user).first()
-
-#     if request.method == "POST":
-#         if existing_rating:
-#             # Update existing rating
-#             form = RatingForm(request.POST, instance=existing_rating)
-#         else:
-#             # Create new rating
-#             form = RatingForm(request.POST)
-        
-#         if form.is_valid():
-#             rating = form.save(commit=False)
-#             rating.book = book
-#             rating.user = request.user
-#             rating.save()
-#             return redirect('book_detail', pk=book.id)
-
-#     else:
-#         # Show existing rating in the form
-#         form = RatingForm(instance=existing_rating)
-
-#     return render(request, 'rate_book.html', {
-#         'book': book,
-#         'form': form,
-#         'existing_rating': existing_rating
-#     })
+# (Removed commented-out example rate_book handler — ratings implemented elsewhere)
 
 
 ### Notification system
