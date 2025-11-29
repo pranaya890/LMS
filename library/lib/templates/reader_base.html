@@ -18,6 +18,12 @@
         <a href="{% url 'reader_dashboard' %}">Dashboard</a>
         <a href="{% url 'reader_view_books' %}">Books</a>
         <a href="{% url 'reader_issued_books' %}">My Issued Books</a>
+        <a href="{% url 'reader_notifications' %}" style="position:relative;">
+            🔔 Notifications
+            {% if unread_notif_count > 0 %}
+                <span style="display:inline-block; background:#ff6b6b; color:white; border-radius:50%; width:20px; height:20px; line-height:20px; text-align:center; font-size:12px; font-weight:bold; margin-left:4px;">{{ unread_notif_count }}</span>
+            {% endif %}
+        </a>
         <a href="{% url 'logout_reader' %}">Logout</a>
     </nav>
 </header>

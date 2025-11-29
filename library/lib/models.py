@@ -1,6 +1,10 @@
 from django.db import models
 from django.utils import timezone
 from datetime import date, timedelta
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import User
+from django.db.models import Avg
+    
 
 
 def default_due_date():
@@ -19,6 +23,8 @@ class Book(models.Model):
     author = models.CharField(max_length=200)  # Author name
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='books')
     number_in_stock = models.PositiveIntegerField(default=0)  # Available copies
+    description = models.TextField(blank=True, null=True, default="No description available")
+    rating = models.IntegerField(default=4)  
 
     def __str__(self):
         return f"{self.name} ({self.isbn})"
@@ -74,3 +80,53 @@ class IssueRequest(models.Model):
 
     def __str__(self):
         return f"{self.book.name} requested by {self.reader.name}"
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('issued', 'Book Issued'),
+        ('due_soon', 'Due Soon (2 days)'),
+        ('overdue', 'Overdue'),
+    ]
+    
+    reader = models.ForeignKey('Reader', on_delete=models.CASCADE, related_name='notifications')
+    issue = models.ForeignKey('Issue', on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.reader.name}: {self.title}"
+
+
+class BookIssuanceRecord(models.Model):
+    """Tracks daily issuance counts for analytics."""
+    book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='issuance_records')
+    date = models.DateField()
+    quantity_issued = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        unique_together = ('book', 'date')
+        ordering = ['date']
+    
+    def __str__(self):
+        return f"{self.book.name} - {self.date}: {self.quantity_issued} issued"
+    
+
+# class BookRating(models.Model):
+#     book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='ratings')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     rating = models.PositiveIntegerField(
+#         validators=[MinValueValidator(1), MaxValueValidator(5)]
+#     )
+
+#     class Meta:
+#         unique_together = ('book', 'user')  # user can rate a book only once
+
+#     def __str__(self):
+#         return f"{self.book.name} - {self.user.username}: {self.rating}"

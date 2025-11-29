@@ -5,12 +5,15 @@ urlpatterns=[
     path('', views.home, name='home'),
     path('add_book/', views.add_book, name='add_book'),
     path('books/', views.view_books, name='view_books'),
+    path('admin/books/<int:pk>/', views.admin_book_details, name='admin_book_details'),
     path('books/edit/<int:pk>/', views.edit_book, name='edit_book'),
     path('books/delete/<int:pk>/', views.delete_book, name='delete_book'),
     # path('books/search/', views.search_books, name='search_books'),
     path('books/<int:pk>/', views.book_details, name='book_details'), #by using primary key
+    path('books/<int:pk>/description/', views.book_description, name='book_description'),
     # path('books/<str:isbn>/', views.book_details, name='book_details'), # for isbn 
     path('all-books/', views.public_books, name='public_books'),#home page ko lagi
+
 
 
     #reader urls
@@ -37,6 +40,8 @@ urlpatterns=[
     path('readers/dashboard/', views.reader_dashboard, name='reader_dashboard'),
     path('reader/books/<int:book_id>/request/', views.issue_request, name='issue_request'),
     path('reader/issued/', views.reader_issued_books, name='reader_issued_books'),
+    path('reader/notifications/', views.reader_notifications, name='reader_notifications'),
+    path('reader/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     ## admin
     path('admin/register/', views.register_admin, name='register_admin'),
     path('admin/login/', views.login_admin, name='login_admin'),
@@ -54,6 +59,9 @@ urlpatterns=[
 
     #search book
     path('ajax/search-books/', views.ajax_search_books, name='ajax_search_books'),
+    
+    #analytics
+    path('books/<int:pk>/analytics/', views.book_analytics_api, name='book_analytics_api'),
 
 
 

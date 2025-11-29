@@ -1,74 +1,72 @@
-{% extends 'reader_base.html' %}
+{% extends 'admin_base.html' %}
 
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  .reader-book { display:flex; gap:20px; }
-  .reader-meta { flex:2; }
-  .reader-analytics { flex:1.5; }
+  .admin-book { display:flex; gap:24px; }
+  .admin-book img { max-width:200px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+  .admin-meta { flex:2; }
+  .admin-analytics { flex:1.5; }
+  .admin-meta .row { margin-bottom:10px; }
+  .admin-actions a { margin-right:12px; }
   .analytics-card { background:#f9f9f9; border:1px solid #ddd; border-radius:8px; padding:16px; }
   .analytics-card h3 { margin-top:0; color:#2c3e50; }
   .analytics-stat { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; }
   .analytics-stat:last-child { border-bottom:none; }
   .analytics-stat strong { color:#2980b9; }
-  #readerIssuanceChart { max-height:300px; margin-top:12px; }
+  #adminIssuanceChart { max-height:300px; margin-top:12px; }
 </style>
 
-<div class="reader-book">
-    <div>
-        {% if book.image %}
-            <img src="{{ book.image.url }}" alt="{{ book.name }}" style="max-width:240px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.06);">
-        {% else %}
-            <div style="width:240px;height:320px;display:flex;align-items:center;justify-content:center;background:#f3f3f3;color:#888;">No image</div>
-        {% endif %}
+<div class="admin-book">
+  <div>
+    {% if book.image %}
+      <img src="{{ book.image.url }}" alt="{{ book.name }}">
+    {% else %}
+      <div style="width:200px;height:280px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;color:#999;">No image</div>
+    {% endif %}
+  </div>
+
+  <div class="admin-meta">
+    <h2>{{ book.name }}</h2>
+    <div class="row"><strong>ISBN:</strong> {{ book.isbn }}</div>
+    <div class="row"><strong>Author:</strong> {{ book.author }}</div>
+    <div class="row"><strong>Category:</strong> {{ book.category.name }}</div>
+    <div class="row"><strong>Stock:</strong> {{ book.number_in_stock }}</div>
+    <div class="row"><strong>Rating:</strong> {{ book.rating }}</div>
+
+    {% if book.description %}
+      <div class="row"><strong>Description</strong></div>
+      <div class="row">{{ book.description|linebreaksbr }}</div>
+    {% else %}
+      <div class="row"><em>No description available.</em></div>
+    {% endif %}
+
+    <div class="admin-actions" style="margin-top:12px;">
+      <a href="{% url 'edit_book' book.pk %}">Edit</a>
+      <a href="{% url 'delete_book' book.pk %}">Delete</a>
+      <a href="{% url 'view_books' %}">Back to list</a>
     </div>
+  </div>
 
-    <div class="reader-meta">
-        <h2>{{ book.name }}</h2>
-        <p><strong>Author:</strong> {{ book.author }}</p>
-        <p><strong>ISBN:</strong> {{ book.isbn }}</p>
-        <p><strong>Category:</strong> {{ book.category.name }}</p>
-        <p><strong>Available Stock:</strong> {{ book.number_in_stock }}</p>
-        <p><strong>Rating:</strong> {{ book.rating }}</p>
-
-        {% if book.description %}
-            <h4>Description</h4>
-            <div>{{ book.description|linebreaksbr }}</div>
-        {% else %}
-            <p><em>No description available.</em></p>
-        {% endif %}
-
-        <div style="margin-top:12px;">
-            {% if book.number_in_stock > 0 %}
-                <form method="post" action="{% url 'issue_request' book.pk %}">
-                    {% csrf_token %}
-                    <button type="submit">Request Issue</button>
-                </form>
-            {% else %}
-                <span style="color:#888">Out of Stock</span>
-            {% endif %}
-        </div>
+  <div class="admin-analytics">
+    <div class="analytics-card">
+      <h3>📊 Analytics (90 Days)</h3>
+      <div class="analytics-stat">
+        <span>Total Issued:</span>
+        <strong>{{ analytics.total_issued }}</strong>
+      </div>
+      <div class="analytics-stat">
+        <span>Avg per Day:</span>
+        <strong>{{ analytics.avg_per_day|floatformat:2 }}</strong>
+      </div>
+      <canvas id="adminIssuanceChart"></canvas>
     </div>
-
-    <div class="reader-analytics">
-        <div class="analytics-card">
-            <h3>📊 Analytics (90 Days)</h3>
-            <div class="analytics-stat">
-                <span>Total Issued:</span>
-                <strong>{{ analytics.total_issued }}</strong>
-            </div>
-            <div class="analytics-stat">
-                <span>Avg per Day:</span>
-                <strong>{{ analytics.avg_per_day|floatformat:2 }}</strong>
-            </div>
-            <canvas id="readerIssuanceChart"></canvas>
-        </div>
-    </div>
+  </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('readerIssuanceChart').getContext('2d');
+    const ctx = document.getElementById('adminIssuanceChart').getContext('2d');
     const dates = {{ analytics.dates|safe }};
     const quantities = {{ analytics.quantities|safe }};
     
@@ -79,13 +77,13 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Books Issued',
                 data: quantities,
-                borderColor: '#4CAF50',
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                borderColor: '#2980b9',
+                backgroundColor: 'rgba(41, 128, 185, 0.1)',
                 borderWidth: 2,
                 fill: true,
                 tension: 0.3,
                 pointRadius: 3,
-                pointBackgroundColor: '#4CAF50'
+                pointBackgroundColor: '#2980b9'
             }]
         },
         options: {
@@ -125,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Author:</strong> {{ pop_book.author }}</p>
                     <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Rating:</strong> ⭐ {{ pop_book.rating }}/5</p>
                     <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Stock:</strong> {{ pop_book.number_in_stock }}</p>
-                    <a href="{% url 'reader_book_detail' pop_book.pk %}" style="display:inline-block;margin-top:8px;padding:6px 12px;background:#4CAF50;color:white;border-radius:4px;text-decoration:none;font-size:12px;">View Details</a>
+                    <a href="{% url 'admin_book_details' pop_book.pk %}" style="display:inline-block;margin-top:8px;padding:6px 12px;background:#2980b9;color:white;border-radius:4px;text-decoration:none;font-size:12px;">View Details</a>
                 </div>
             {% endfor %}
         </div>

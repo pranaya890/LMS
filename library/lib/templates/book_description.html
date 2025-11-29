@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .desc-card { max-width:800px; margin:24px auto; padding:20px; border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .desc-card h2 { margin-top:0; }
+</style>
+
+<div class="desc-card">
+  <h2>{{ book.name }}</h2>
+  <p><strong>Author:</strong> {{ book.author }}</p>
+  <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+  <p><strong>Category:</strong> {{ book.category.name }}</p>
+  <p><strong>Available Stock:</strong> {{ book.number_in_stock }}</p>
+  <p><strong>Rating:</strong> {{ book.rating }}</p>
+  <hr>
+  {% if book.description %}
+    <div>{{ book.description|linebreaksbr }}</div>
+  {% else %}
+    <div><em>No description available for this book.</em></div>
+  {% endif %}
+
+  <p style="margin-top:16px;"><a href="{% url 'book_details' book.pk %}">&larr; Back to details</a></p>
+</div>
+
+{% endblock %}

@@ -19,6 +19,7 @@
             <th>Category</th>
             <th>ISBN</th>
             <th>Stock</th>
+            <th>Description</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -32,6 +33,13 @@
             <td>{{ book.category }}</td>
             <td>{{ book.isbn }}</td>
             <td>{{ book.number_in_stock }}</td>
+            <td>
+                {% if book.description %}
+                    {{ book.description|truncatewords:15 }}
+                {% else %}
+                    No description
+                {% endif %}
+            </td>
             <td>
                 {% if book.number_in_stock > 0 %}
                 <form method="post" action="{% url 'issue_request' book.pk %}">

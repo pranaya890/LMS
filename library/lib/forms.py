@@ -5,7 +5,7 @@ from .models import Book, Reader, Issue,Admin
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['name', 'isbn', 'image', 'author', 'category', 'number_in_stock']
+        fields = ['name', 'isbn', 'image', 'author', 'category', 'number_in_stock', 'description']
 
 # def view_books(request):
 #     books = Book.objects.all()  # fetch all books
@@ -35,3 +35,5 @@ class AdminRegisterForm(forms.ModelForm):
     class Meta:
         model = Admin
         fields = ['admin_id', 'name', 'password']
+
+

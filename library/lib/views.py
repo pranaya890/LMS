@@ -1,15 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .forms import BookForm,ReaderForm,IssueForm,ReaderRegisterForm
-from .models import Book,Reader,Issue,Fine,IssueRequest,Admin,Category
-from django.db.models import Q
+from .models import Book,Reader,Issue,Fine,IssueRequest,Admin,Category,Notification,BookIssuanceRecord
+from django.db.models import Q, Count
 from django.utils import timezone
 from django.utils.timezone import now
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import timedelta,date
 from django.contrib import messages
-from django.http import JsonResponse
 from django.urls import reverse
+import json
 
 
 
@@ -31,7 +31,7 @@ def add_book(request):
         form = BookForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('book_list')  # redirect to a book list page after adding
+            return redirect('view_books')  # redirect to view_books after adding
     else:
         form = BookForm()
     return render(request, 'add_book.html', {'form': form})
@@ -71,7 +71,38 @@ def view_books(request):
 
 def book_details(request, pk):
     book = get_object_or_404(Book, pk=pk)  # fetch book or return 404 if not found
-    return render(request, 'book_details.html', {'book': book})
+    analytics = get_book_analytics_data(book, days=90)
+    popular_books = get_popular_books(limit=3, exclude_book_id=pk)
+    return render(request, 'book_details.html', {
+        'book': book,
+        'analytics': analytics,
+        'popular_books': popular_books,
+    })
+
+
+def book_description(request, pk):
+    """Render a simple page that shows the book title and its full description.
+
+    This can be used for a dedicated description view or AJAX-loaded fragment.
+    """
+    book = get_object_or_404(Book, pk=pk)
+    return render(request, 'book_description.html', {'book': book})
+
+
+def admin_book_details(request, pk):
+    """Admin-only book details view. Requires admin session; otherwise redirects to admin login."""
+    admin_id = request.session.get('admin_id')
+    if not admin_id:
+        return redirect('login_admin')
+
+    book = get_object_or_404(Book, pk=pk)
+    analytics = get_book_analytics_data(book, days=90)
+    popular_books = get_popular_books(limit=3, exclude_book_id=pk)
+    return render(request, 'admin_book_details.html', {
+        'book': book,
+        'analytics': analytics,
+        'popular_books': popular_books,
+    })
 
 
 
@@ -250,12 +281,18 @@ def reader_dashboard(request):
                 'amount': (today - issue.due_date).days * 2  # example: $2 per overdue day
             })
     
+    # Check and create notifications for due soon and overdue books
+    check_and_create_due_soon_notifications()
+    check_and_create_overdue_notifications()
+    
     fines = Fine.objects.filter(issue__reader=reader, paid=False)
+    unread_notif_count = reader.notifications.filter(read=False).count()
 
     return render(request, 'reader_dashboard.html', {
         'reader': reader,
         'issues': issues,
         'fines': fines,
+        'unread_notif_count': unread_notif_count,
     })
 
 def reader_view_books(request):
@@ -267,7 +304,13 @@ def reader_book_detail(request, pk):
     View for a reader to see book details.
     """
     book = get_object_or_404(Book, pk=pk)
-    return render(request, 'reader_book_detail.html', {'book': book})
+    analytics = get_book_analytics_data(book, days=90)
+    popular_books = get_popular_books(limit=3, exclude_book_id=pk)
+    return render(request, 'reader_book_detail.html', {
+        'book': book,
+        'analytics': analytics,
+        'popular_books': popular_books,
+    })
 
 def approve_request(request, request_id):
     admin_id = request.session.get('admin_id')
@@ -293,7 +336,7 @@ def approve_request(request, request_id):
         return redirect('admin_issue_requests')
 
     # ✅ Approve request and issue the book
-    Issue.objects.create(
+    issue = Issue.objects.create(
         reader=reader,
         book=book,
         issued_date=date.today(),
@@ -301,6 +344,12 @@ def approve_request(request, request_id):
     )
     book.number_in_stock -= 1
     book.save()
+
+    # Create a notification for the issued book
+    create_issue_notification(issue)
+    
+    # Record issuance for analytics
+    record_book_issuance(book, issued_date=issue.issued_date)
 
     req.approved = True
     req.save()
@@ -435,7 +484,7 @@ def approve_request(request, request_id):
         return redirect('admin_issue_requests')
 
     #  Approve request and issue the book
-    Issue.objects.create(
+    issue = Issue.objects.create(
         reader=reader,
         book=book,
         issued_date=date.today(),
@@ -443,6 +492,12 @@ def approve_request(request, request_id):
     )
     book.number_in_stock -= 1
     book.save()
+
+    # Create a notification for the issued book
+    create_issue_notification(issue)
+    
+    # Record issuance for analytics
+    record_book_issuance(book, issued_date=issue.issued_date)
 
     req.approved = True
     req.save()
@@ -533,7 +588,7 @@ def ajax_search_books(request):
     for book in books:
         # Check if user is authenticated and admin
         if request.session.get('admin_id'):
-            url = reverse('book_details', args=[book.pk])  # admin book detail
+            url = reverse('admin_book_details', args=[book.pk])  # admin book detail
         else:
             url = reverse('reader_book_detail', args=[book.pk])  # reader book detail
 
@@ -549,3 +604,197 @@ def ajax_search_books(request):
         })
 
     return JsonResponse({'books': data})
+
+
+
+# def rate_book(request, book_id):
+#     book = get_object_or_404(Book, id=book_id)
+
+#     # Check if user already rated this book
+#     existing_rating = BookRating.objects.filter(book=book, user=request.user).first()
+
+#     if request.method == "POST":
+#         if existing_rating:
+#             # Update existing rating
+#             form = RatingForm(request.POST, instance=existing_rating)
+#         else:
+#             # Create new rating
+#             form = RatingForm(request.POST)
+        
+#         if form.is_valid():
+#             rating = form.save(commit=False)
+#             rating.book = book
+#             rating.user = request.user
+#             rating.save()
+#             return redirect('book_detail', pk=book.id)
+
+#     else:
+#         # Show existing rating in the form
+#         form = RatingForm(instance=existing_rating)
+
+#     return render(request, 'rate_book.html', {
+#         'book': book,
+#         'form': form,
+#         'existing_rating': existing_rating
+#     })
+
+
+### Notification system
+
+def create_issue_notification(issue):
+    """Create a notification when a book is issued to a reader."""
+    Notification.objects.create(
+        reader=issue.reader,
+        issue=issue,
+        notification_type='issued',
+        title=f"Book Issued: {issue.book.name}",
+        message=f"You have been issued '{issue.book.name}' by {issue.book.author}. Due date: {issue.due_date}"
+    )
+
+
+def check_and_create_due_soon_notifications():
+    """Create notifications for books due in 2 days. Call this periodically (e.g., via cron/celery)."""
+    today = timezone.now().date()
+    target_date = today + timedelta(days=2)
+    
+    # Find issues that are due in 2 days and not yet notified
+    issues = Issue.objects.filter(
+        due_date=target_date,
+        returned_date__isnull=True
+    ).select_related('reader', 'book')
+    
+    for issue in issues:
+        # Check if notification already exists for this issue
+        if not Notification.objects.filter(issue=issue, notification_type='due_soon').exists():
+            Notification.objects.create(
+                reader=issue.reader,
+                issue=issue,
+                notification_type='due_soon',
+                title=f"Due Soon: {issue.book.name}",
+                message=f"'{issue.book.name}' is due on {issue.due_date}. Please return it on time to avoid fines."
+            )
+
+
+def check_and_create_overdue_notifications():
+    """Create notifications for overdue books. Call this periodically (e.g., via cron/celery)."""
+    today = timezone.now().date()
+    
+    # Find overdue issues (not returned and due date passed) and not yet notified
+    overdue_issues = Issue.objects.filter(
+        due_date__lt=today,
+        returned_date__isnull=True
+    ).select_related('reader', 'book')
+    
+    for issue in overdue_issues:
+        # Check if notification already exists for this issue
+        if not Notification.objects.filter(issue=issue, notification_type='overdue').exists():
+            days_overdue = (today - issue.due_date).days
+            Notification.objects.create(
+                reader=issue.reader,
+                issue=issue,
+                notification_type='overdue',
+                title=f"Overdue: {issue.book.name}",
+                message=f"'{issue.book.name}' is {days_overdue} day(s) overdue. Please return it immediately to avoid additional fines."
+            )
+
+
+def reader_notifications(request):
+    """Display all notifications for the logged-in reader."""
+    reader_id = request.session.get('reader_id')
+    if not reader_id:
+        return redirect('login_reader')
+    
+    reader = Reader.objects.get(id=reader_id)
+    notifications = reader.notifications.all()
+    unread_count = notifications.filter(read=False).count()
+    
+    # Mark as read if requested
+    if request.method == 'POST':
+        notification_id = request.POST.get('notification_id')
+        if notification_id:
+            notif = get_object_or_404(Notification, id=notification_id, reader=reader)
+            notif.read = True
+            notif.save()
+            return redirect('reader_notifications')
+    
+    return render(request, 'reader_notifications.html', {
+        'reader': reader,
+        'notifications': notifications,
+        'unread_count': unread_count,
+    })
+
+
+def mark_all_notifications_read(request):
+    """Mark all notifications as read for the logged-in reader."""
+    reader_id = request.session.get('reader_id')
+    if not reader_id:
+        return redirect('login_reader')
+    
+    reader = Reader.objects.get(id=reader_id)
+    reader.notifications.filter(read=False).update(read=True)
+    
+    return redirect('reader_notifications')
+
+
+### Analytics
+
+def record_book_issuance(book, issued_date=None):
+    """Record a book issuance in the analytics."""
+    if issued_date is None:
+        issued_date = date.today()
+    
+    record, created = BookIssuanceRecord.objects.get_or_create(
+        book=book,
+        date=issued_date,
+        defaults={'quantity_issued': 0}
+    )
+    record.quantity_issued += 1
+    record.save()
+
+
+def get_book_analytics_data(book, days=90):
+    """Get analytics data for a book over the last N days."""
+    end_date = date.today()
+    start_date = end_date - timedelta(days=days)
+    
+    records = BookIssuanceRecord.objects.filter(
+        book=book,
+        date__gte=start_date,
+        date__lte=end_date
+    ).order_by('date')
+    
+    dates = [str(r.date) for r in records]
+    quantities = [r.quantity_issued for r in records]
+    
+    return {
+        'dates': dates,
+        'quantities': quantities,
+        'total_issued': sum(quantities),
+        'avg_per_day': sum(quantities) / max(len(records), 1) if records else 0,
+    }
+
+
+def book_analytics_api(request, pk):
+    """API endpoint to return analytics data as JSON."""
+    book = get_object_or_404(Book, pk=pk)
+    days = request.GET.get('days', 90)
+    
+    try:
+        days = int(days)
+    except (ValueError, TypeError):
+        days = 90
+    
+    data = get_book_analytics_data(book, days=days)
+    return JsonResponse(data)
+
+
+def get_popular_books(limit=3, exclude_book_id=None):
+    """Get random popular books with rating > 4.5."""
+    books = Book.objects.filter(rating__gt=4.5)
+    
+    if exclude_book_id:
+        books = books.exclude(pk=exclude_book_id)
+    
+    # Order by random and limit
+    books = books.order_by('?')[:limit]
+    return books
