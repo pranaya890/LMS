@@ -2,28 +2,60 @@
 <html>
 <head>
     <title>Admin Panel - My Library</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <style>
-        body { font-family: Arial, sans-serif; margin:0; padding:0; }
-        header { background-color: #34495e; color: white; padding: 10px 20px; }
-        nav a { color: white; margin-right: 15px; text-decoration: none; }
-        main { padding: 20px; margin-bottom: 50px; }
-        footer { background-color: #34495e; color: white; text-align: center; padding: 10px; position: fixed; width: 100%; bottom: 0; }
+        /* Admin-specific styling */
+        .admin-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 15px;
+        }
+
+        .admin-nav a {
+            color: var(--text-dark);
+            padding: 8px 12px;
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .admin-nav a:hover {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .admin-nav a:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>📚 Admin Panel</h1>
+    <h1>📊 Admin Panel</h1>
     <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'public_books' %}">Library</a>
+    </nav>
+    <div class="admin-nav">
         <a href="{% url 'admin_dashboard' %}">Dashboard</a>
         <a href="{% url 'view_books' %}">Books</a>
         <a href="{% url 'view_readers' %}">Readers</a>
         <a href="{% url 'view_issues' %}">Issued Books</a>
         <a href="{% url 'view_fines' %}">Fines</a>
-        <a href="{% url 'admin_issue_requests' %}">Issue Requests</a>
+        <a href="{% url 'admin_issue_requests' %}">Requests</a>
         <a href="{% url 'view_categories' %}">Categories</a>
         <a href="{% url 'logout_admin' %}">Logout</a>
-    </nav>
+    </div>
 </header>
 
 <main>
@@ -32,7 +64,7 @@
 </main>
 
 <footer>
-    &copy; {% now "Y" %} My Library Admin. All rights reserved.
+    &copy; {% now "Y" %} My Library Admin Panel. All rights reserved.
 </footer>
 
 </body>

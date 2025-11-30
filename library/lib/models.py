@@ -105,6 +105,7 @@ class Notification(models.Model):
         ('issued', 'Book Issued'),
         ('due_soon', 'Due Soon (2 days)'),
         ('overdue', 'Overdue'),
+        ('request_rejected', 'Request Rejected'),
     ]
     
     reader = models.ForeignKey('Reader', on_delete=models.CASCADE, related_name='notifications')

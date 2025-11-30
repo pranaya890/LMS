@@ -659,6 +659,19 @@ def reject_request(request, request_id):
     req.rejected = True
     req.save()
 
+    # Create a notification for the reader informing them their request was rejected
+    try:
+        Notification.objects.create(
+            reader=req.reader,
+            issue=None,
+            notification_type='request_rejected',
+            title=f"Request Rejected: {req.book.name}",
+            message=f"Your request to issue '{req.book.name}' was rejected by the library administrator."
+        )
+    except Exception:
+        # If notification creation fails for any reason, continue silently but log to console for debugging
+        print(f"Failed to create rejection notification for IssueRequest {req.pk}")
+
     return redirect('admin_issue_requests')
 
 #category for admin

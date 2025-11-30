@@ -1,13 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Reader Dashboard</title>
+    <title>Reader Dashboard - My Library</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <style>
-        body { font-family: Arial, sans-serif; margin:0; padding:0; }
-        header { background-color: #2c3e50; color: white; padding: 10px 20px; }
-        nav a { color: white; margin-right: 15px; text-decoration: none; }
-        footer { background-color: #2c3e50; color: white; text-align: center; padding: 10px; position: fixed; width: 100%; bottom: 0; }
-        main { padding: 20px; margin-bottom: 50px; }
+        /* Reader-specific styling */
+        .reader-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        .reader-nav a {
+            color: var(--text-dark);
+            padding: 8px 12px;
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .reader-nav a:hover {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .reader-nav a:active {
+            transform: scale(0.98);
+        }
+
+        .notification-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 4px;
+        }
     </style>
 </head>
 <body>
@@ -15,17 +62,21 @@
 <header>
     <h1>📚 Reader Dashboard</h1>
     <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'public_books' %}">Library</a>
+    </nav>
+    <div class="reader-nav">
         <a href="{% url 'reader_dashboard' %}">Dashboard</a>
-        <a href="{% url 'reader_view_books' %}">Books</a>
-        <a href="{% url 'reader_issued_books' %}">My Issued Books</a>
-        <a href="{% url 'reader_notifications' %}" style="position:relative;">
+        <a href="{% url 'reader_view_books' %}">Browse Books</a>
+        <a href="{% url 'reader_issued_books' %}">My Books</a>
+        <a href="{% url 'reader_notifications' %}">
             🔔 Notifications
             {% if unread_notif_count > 0 %}
-                <span style="display:inline-block; background:#ff6b6b; color:white; border-radius:50%; width:20px; height:20px; line-height:20px; text-align:center; font-size:12px; font-weight:bold; margin-left:4px;">{{ unread_notif_count }}</span>
+                <span class="notification-badge">{{ unread_notif_count }}</span>
             {% endif %}
         </a>
         <a href="{% url 'logout_reader' %}">Logout</a>
-    </nav>
+    </div>
 </header>
 
 <main>

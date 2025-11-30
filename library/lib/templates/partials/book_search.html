@@ -78,10 +78,51 @@ document.addEventListener('DOMContentLoaded', function() {
                             cell.innerHTML = originalHtml;
                             return;
                         }
-                        // replace matching text inside the HTML string — this preserves anchors and other tags
+                        // restore original HTML first (so attributes/structure are preserved)
+                        cell.innerHTML = originalHtml;
+                        if (!q) return;
                         const pattern = new RegExp(escapeRegExp(q), 'ig');
-                        const highlighted = originalHtml.replace(pattern, match => `<mark class="highlight">${match}</mark>`);
-                        cell.innerHTML = highlighted;
+
+                        // Highlight only text nodes (do not touch attribute values like href)
+                        function highlightTextNodes(el) {
+                            const childNodes = Array.from(el.childNodes);
+                            childNodes.forEach(node => {
+                                if (node.nodeType === Node.TEXT_NODE) {
+                                    const text = node.nodeValue;
+                                    let lastIndex = 0;
+                                    const fragments = [];
+                                    let m;
+                                    while ((m = pattern.exec(text)) !== null) {
+                                        const idx = m.index;
+                                        if (idx > lastIndex) fragments.push(document.createTextNode(text.slice(lastIndex, idx)));
+                                        const mark = document.createElement('mark');
+                                        mark.className = 'highlight';
+                                        mark.textContent = m[0];
+                                        fragments.push(mark);
+                                        lastIndex = idx + m[0].length;
+                                    }
+                                    if (fragments.length) {
+                                        fragments.push(document.createTextNode(text.slice(lastIndex)));
+                                        fragments.forEach(f => el.insertBefore(f, node));
+                                        el.removeChild(node);
+                                    }
+                                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                                    // Recurse into child elements but skip script/style tags
+                                    const tag = node.tagName && node.tagName.toLowerCase();
+                                    if (tag !== 'script' && tag !== 'style') {
+                                        highlightTextNodes(node);
+                                    }
+                                }
+                            });
+                        }
+
+                        try {
+                            highlightTextNodes(cell);
+                        } catch (e) {
+                            // fallback: if something goes wrong, revert to original replace behaviour on HTML string
+                            const highlighted = originalHtml.replace(pattern, match => `<mark class="highlight">${match}</mark>`);
+                            cell.innerHTML = highlighted;
+                        }
                 });
                     });
 
