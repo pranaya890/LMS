@@ -20,6 +20,7 @@ urlpatterns=[
     path('readers/', views.view_readers, name='view_readers'),
     #path('readers/add/', views.add_reader, name='add_reader'),
     path('reader/books/<int:pk>/', views.reader_book_detail, name='reader_book_detail'),
+    path('reader/books/<int:pk>/rate/', views.rate_book, name='rate_book'),
     path('readers/<int:pk>/edit/', views.edit_reader, name='edit_reader'),
     path('readers/<int:pk>/delete/', views.delete_reader, name='delete_reader'),
     path('readers/<int:pk>/', views.reader_details, name='reader_details'),

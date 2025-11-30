@@ -44,7 +44,7 @@
                 <td>{{ book.author }}</td>
                 <td>{{ book.category.name }}</td>
                 <td>{{ book.number_in_stock }}</td>
-                <td>⭐ {{ book.rating }}/5.0</td>
+                <td>⭐ {{ book.combined_rating }}/5</td>
                 <td>
                     {% if book.image %}
                         <img src="{{ book.image.url }}" alt="{{ book.name }}">

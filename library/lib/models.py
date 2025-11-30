@@ -27,6 +27,24 @@ class Book(models.Model):
     def __str__(self):
         return f"{self.name} ({self.isbn})"
     
+    def avg_reader_rating(self):
+        """Return average rating given by readers for this book (float). If none, fall back to admin rating."""
+        from django.db.models import Avg
+        avg = self.reader_ratings.aggregate(avg=Avg('rating'))['avg']
+        try:
+            return float(avg) if avg is not None else float(self.rating)
+        except (TypeError, ValueError):
+            return float(self.rating)
+
+    def combined_rating(self):
+        """Return combined rating: average of admin rating and reader average, rounded to 1 decimal."""
+        try:
+            avg_reader = self.avg_reader_rating()
+            combined = (float(self.rating) + float(avg_reader)) / 2.0
+            return round(combined, 1)
+        except Exception:
+            return float(self.rating)
+    
 class Admin(models.Model):
     admin_id = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=100)
@@ -43,6 +61,8 @@ class Reader(models.Model):
     phone_number = models.CharField(max_length=15, unique=True)  # to avoid duplicates
     address = models.TextField()
     password = models.CharField(max_length=128, default='temp123')
+    # Flag for college staff members who have different borrowing rules (e.g. longer due dates)
+    is_staff_member = models.BooleanField(default=False)
 
 
     def __str__(self):
@@ -114,5 +134,20 @@ class BookIssuanceRecord(models.Model):
     
     def __str__(self):
         return f"{self.book.name} - {self.date}: {self.quantity_issued} issued"
+
+
+class BookRating(models.Model):
+    """Per-reader rating for a book."""
+    book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='reader_ratings')
+    reader = models.ForeignKey('Reader', on_delete=models.CASCADE, related_name='ratings')
+    rating = models.DecimalField(max_digits=2, decimal_places=1, validators=[MinValueValidator(1.0), MaxValueValidator(5.0)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('book', 'reader')
+
+    def __str__(self):
+        return f"{self.reader.name} -> {self.book.name}: {self.rating}"
     
 

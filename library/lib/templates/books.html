@@ -35,6 +35,7 @@
             <tr>
                 <th>Name</th>
                 <th>Author</th>
+                <th>Rating</th>
                 <th>Category</th>
                 <th>ISBN</th>
                 <th>Stock</th>
@@ -49,6 +50,7 @@
                 <a href="{% url 'reader_book_detail' book.pk %}">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a>
             </td>
                 <td>{{ book.author }}</td>
+                <td>⭐ {{ book.combined_rating }}/5</td>
             <td>{% if query %}{{ book.author|highlight:query }}{% else %}{{ book.author }}{% endif %}</td>
             <td>{% if query %}{{ book.category|highlight:query }}{% else %}{{ book.category }}{% endif %}</td>
                 <td>{{ book.isbn }}</td>

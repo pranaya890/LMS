@@ -29,7 +29,31 @@
         <p><strong>ISBN:</strong> {{ book.isbn }}</p>
         <p><strong>Category:</strong> {{ book.category.name }}</p>
         <p><strong>Available Stock:</strong> {{ book.number_in_stock }}</p>
-        <p><strong>Rating:</strong> {{ book.rating }}</p>
+        <p id="rating-paragraph"><strong>Rating:</strong>
+            {% if combined_rating %}
+                ⭐ {{ combined_rating }}/5
+                <small style="color:#666;">(Admin: {{ book.rating }} | Readers Avg: {{ avg_reader_rating }})</small>
+            {% else %}
+                ⭐ {{ book.rating }}/5
+            {% endif %}
+        </p>
+
+        <div style="margin-top:12px;">
+            <form id="rating-form" method="post" action="{% url 'rate_book' book.pk %}">
+                {% csrf_token %}
+                <label for="rating">Your Rating:</label>
+                <div id="star-widget" style="display:inline-block;vertical-align:middle;margin-left:8px;">
+                    <!-- stars will be clickable -->
+                    <span class="star" data-value="1">☆</span>
+                    <span class="star" data-value="2">☆</span>
+                    <span class="star" data-value="3">☆</span>
+                    <span class="star" data-value="4">☆</span>
+                    <span class="star" data-value="5">☆</span>
+                </div>
+                <input type="hidden" name="rating" id="rating-input" value="">
+                <div id="rating-feedback" style="margin-top:8px;color:green;display:none;"></div>
+            </form>
+        </div>
 
         {% if book.description %}
             <h4>Description</h4>
@@ -108,8 +132,86 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // expose admin rating to JS
+    const BOOK_ADMIN_RATING = {{ book.rating|floatformat:1 }};
+    const ratingInput = document.getElementById('rating-input');
+    const stars = Array.from(document.querySelectorAll('#star-widget .star'));
+    const feedback = document.getElementById('rating-feedback');
+    const form = document.getElementById('rating-form');
+
+    function highlightStars(n) {
+        stars.forEach(s => {
+            const v = parseInt(s.dataset.value, 10);
+            if (v <= n) {
+                s.textContent = '★';
+                s.style.color = 'gold';
+            } else {
+                s.textContent = '☆';
+                s.style.color = '#ccc';
+            }
+        });
+    }
+
+    // handle star clicks (instant submit)
+    stars.forEach(s => {
+        s.style.cursor = 'pointer';
+        s.style.fontSize = '22px';
+        s.style.color = '#ccc';
+        s.addEventListener('mouseenter', () => highlightStars(parseInt(s.dataset.value)));
+        s.addEventListener('mouseleave', () => highlightStars(parseInt(ratingInput.value) || 0));
+        s.addEventListener('click', () => {
+            ratingInput.value = s.dataset.value;
+            highlightStars(parseInt(s.dataset.value));
+
+            // Immediately submit via AJAX
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData,
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = 'red';
+                    feedback.textContent = data.error;
+                    return;
+                }
+                // update rating display (replace contents of the paragraph)
+                const ratingParagraph = document.getElementById('rating-paragraph');
+                if (ratingParagraph) {
+                    ratingParagraph.innerHTML = `<strong>Rating:</strong> ⭐ ${data.combined_rating}/5 <small style="color:#666;">(Admin: ${BOOK_ADMIN_RATING} | Readers Avg: ${data.avg_reader_rating})</small>`;
+                }
+                // update star highlights to match saved value
+                ratingInput.value = String(data.user_rating || ratingInput.value);
+                highlightStars(parseInt(ratingInput.value) || 0);
+                feedback.style.display = 'block';
+                feedback.style.color = 'green';
+                feedback.textContent = 'Your rating has been saved.';
+            }).catch(err => {
+                feedback.style.display = 'block';
+                feedback.style.color = 'red';
+                feedback.textContent = 'Error submitting rating.';
+            });
+        });
+    });
+
+    // prefill if user_rating exists
+    const initialUserRating = {{ user_rating|default:'null' }};
+    if (initialUserRating) {
+        ratingInput.value = String(initialUserRating);
+        highlightStars(parseInt(initialUserRating));
+    }
+});
+</script>
+
 <section style="margin-top:32px;">
     <h2>⭐ Most Popular</h2>
+
+    
     {% if popular_books %}
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
             {% for pop_book in popular_books %}

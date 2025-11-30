@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .forms import BookForm,ReaderForm,IssueForm,ReaderRegisterForm
-from .models import Book,Reader,Issue,Fine,IssueRequest,Admin,Category,Notification,BookIssuanceRecord
-from django.db.models import Q, Count
+from .models import Book,Reader,Issue,Fine,IssueRequest,Admin,Category,Notification,BookIssuanceRecord, BookRating
+from django.db.models import Q, Count, Avg
 from django.utils import timezone
 from django.utils.timezone import now
 from django.contrib.auth.hashers import make_password, check_password
@@ -20,9 +20,12 @@ MAX_ISSUED_PER_READER = getattr(settings, 'MAX_ISSUED_PER_READER', 5)
 
 def home(request):
     categories = Category.objects.all()
+    # show a small selection of books on the homepage (e.g., latest or popular)
+    books = Book.objects.all().order_by('-id')[:6]
     return render(request, 'home.html', {
         'year': now().year,
-        'categories': categories
+        'categories': categories,
+        'books': books,
     })
 
 def public_books(request):
@@ -183,7 +186,11 @@ def issue_book(request):
 
                 #  validate due_date
                 if not issue.due_date:
-                    issue.due_date = issue.issued_date + timedelta(days=14)  # default 2 weeks
+                    # If the reader is marked as staff_member, give 6 months (approx 182 days), else default 14 days
+                    if getattr(issue.reader, 'is_staff_member', False):
+                        issue.due_date = issue.issued_date + timedelta(days=182)
+                    else:
+                        issue.due_date = issue.issued_date + timedelta(days=14)  # default 2 weeks
                 elif issue.due_date <= issue.issued_date:
                     form.add_error('due_date', 'Due date must be after today.')
                 elif issue.due_date > issue.issued_date + timedelta(days=30):
@@ -253,8 +260,10 @@ def register_reader(request):
         form = ReaderRegisterForm(request.POST)
         if form.is_valid():
             reader = form.save(commit=False)
-            # Store password as plain text for simplicity (or use hashing)
+            # Store password as plain text for simplicity (consider hashing in future)
             reader.password = form.cleaned_data['password']
+            # ensure is_staff_member is set (form provides it)
+            reader.is_staff_member = form.cleaned_data.get('is_staff_member', False)
             reader.save()
             return redirect('login_reader')
     else:
@@ -270,6 +279,8 @@ def login_reader(request):
         try:
             reader = Reader.objects.get(reader_id=reader_id, password=password)
             request.session['reader_id'] = reader.id  # store session
+            # Cache staff flag in session for quick checks in templates/views
+            request.session['is_staff_member'] = bool(getattr(reader, 'is_staff_member', False))
             return redirect('reader_dashboard')  # you can create a dashboard view
         except Reader.DoesNotExist:
             error = "Invalid Reader ID or password"
@@ -278,6 +289,8 @@ def login_reader(request):
 def logout_reader(request):
     if 'reader_id' in request.session:
         del request.session['reader_id']
+    if 'is_staff_member' in request.session:
+        del request.session['is_staff_member']
     return redirect('home')
 
 
@@ -326,10 +339,70 @@ def reader_book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
     analytics = get_book_analytics_data(book, days=90)
     popular_books = get_popular_books(limit=3, exclude_book_id=pk)
+    # compute average rating given by readers
+    avg_reader_rating = BookRating.objects.filter(book=book).aggregate(avg=Avg('rating'))['avg']
+    if avg_reader_rating is None:
+        avg_reader_rating = float(book.rating)
+    else:
+        avg_reader_rating = float(avg_reader_rating)
+
+    combined_rating = round((float(book.rating) + avg_reader_rating) / 2.0, 1)
+
+    # current user's rating (if logged in)
+    user_rating = None
+    reader_obj = None
+    reader_id = request.session.get('reader_id')
+    if reader_id:
+        reader_obj = Reader.objects.filter(id=reader_id).first()
+        if reader_obj:
+            ur = BookRating.objects.filter(book=book, reader=reader_obj).first()
+            if ur:
+                user_rating = float(ur.rating)
+
     return render(request, 'reader_book_detail.html', {
         'book': book,
         'analytics': analytics,
         'popular_books': popular_books,
+        'combined_rating': combined_rating,
+        'avg_reader_rating': round(avg_reader_rating, 1),
+        'user_rating': user_rating,
+    })
+
+
+def rate_book(request, pk):
+    """AJAX endpoint for readers to submit/update a rating for a book."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    reader_id = request.session.get('reader_id')
+    if not reader_id:
+        return JsonResponse({'error': 'login required'}, status=403)
+
+    reader = get_object_or_404(Reader, id=reader_id)
+    book = get_object_or_404(Book, pk=pk)
+
+    try:
+        rating = float(request.POST.get('rating', 0))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'invalid rating'}, status=400)
+
+    if rating < 1 or rating > 5:
+        return JsonResponse({'error': 'rating out of range (1-5)'}, status=400)
+
+    br, created = BookRating.objects.update_or_create(
+        book=book,
+        reader=reader,
+        defaults={'rating': rating}
+    )
+
+    avg_reader = BookRating.objects.filter(book=book).aggregate(avg=Avg('rating'))['avg'] or float(book.rating)
+    avg_reader = float(avg_reader)
+    combined = round((float(book.rating) + avg_reader) / 2.0, 1)
+
+    return JsonResponse({
+        'combined_rating': combined,
+        'avg_reader_rating': round(avg_reader, 1),
+        'user_rating': float(br.rating),
     })
 
 def approve_request(request, request_id):
@@ -370,11 +443,18 @@ def approve_request(request, request_id):
         return redirect('admin_issue_requests')
 
     # ✅ Approve request and issue the book
+    # compute due_date depending on whether the reader is a staff member
+    issued_date = date.today()
+    if getattr(reader, 'is_staff_member', False):
+        due = issued_date + timedelta(days=182)  # ~6 months
+    else:
+        due = issued_date + timedelta(days=14)
+
     issue = Issue.objects.create(
         reader=reader,
         book=book,
-        issued_date=date.today(),
-        due_date=date.today() + timedelta(days=14)
+        issued_date=issued_date,
+        due_date=due
     )
     book.number_in_stock -= 1
     book.save()
@@ -542,11 +622,18 @@ def approve_request(request, request_id):
         return redirect('admin_issue_requests')
 
     #  Approve request and issue the book
+    # compute due_date depending on whether the reader is a staff member
+    issued_date = date.today()
+    if getattr(reader, 'is_staff_member', False):
+        due = issued_date + timedelta(days=182)  # ~6 months
+    else:
+        due = issued_date + timedelta(days=14)
+
     issue = Issue.objects.create(
         reader=reader,
         book=book,
-        issued_date=date.today(),
-        due_date=date.today() + timedelta(days=14)
+        issued_date=issued_date,
+        due_date=due
     )
     book.number_in_stock -= 1
     book.save()
@@ -647,14 +734,24 @@ def ajax_search_books(request):
 
     data = []
     for book in books:
-        # Check if user is authenticated and admin
+        # Choose correct detail URL depending on who is viewing
         if request.session.get('admin_id'):
             url = reverse('admin_book_details', args=[book.pk])  # admin book detail
+        elif request.session.get('reader_id'):
+            url = reverse('reader_book_detail', args=[book.pk])  # logged-in reader detail
         else:
-            url = reverse('reader_book_detail', args=[book.pk])  # reader book detail
+            url = reverse('book_details', args=[book.pk])  # public/detail view for anonymous users
 
         # Debug print
         print(f"User: {request.user}, is_staff: {getattr(request.user, 'is_staff', False)}, Book URL: {url}")
+
+        # compute reader average and combined rating for this book
+        try:
+            avg_reader = BookRating.objects.filter(book=book).aggregate(avg=Avg('rating'))['avg'] or float(book.rating)
+            avg_reader = float(avg_reader)
+        except Exception:
+            avg_reader = float(book.rating)
+        combined = round((float(book.rating) + avg_reader) / 2.0, 1)
 
         data.append({
             'name': book.name,
@@ -666,6 +763,8 @@ def ajax_search_books(request):
             'pk': book.pk,
             'url': url,
             'stock': book.number_in_stock,
+            'avg_reader_rating': round(avg_reader, 1),
+            'combined_rating': combined,
         })
 
     return JsonResponse({'books': data})

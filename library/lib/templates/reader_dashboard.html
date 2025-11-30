@@ -11,11 +11,20 @@
   th { background:#4CAF50; color:white; padding:12px; text-align:left; }
   td { padding:12px; border-bottom:1px solid #ddd; }
   tr:hover { background:#f5f5f5; }
-  .not-returned { color:#ff9800; }
+    .not-returned { color:#ff9800; }
+    .staff-badge { display:inline-block; background:#4a90e2; color:white; font-size:0.8rem; padding:4px 8px; border-radius:12px; margin-left:10px; }
 </style>
 
 <div class="dashboard-container">
-    <h2>👋 Welcome, {{ reader.name }}</h2>
+    <h2>👋 Welcome, {{ reader.name }}
+        <span class="staff-badge">
+            {% if reader.is_staff_member %}
+                Teacher
+            {% else %}
+                Student
+            {% endif %}
+        </span>
+    </h2>
     
     <div class="info-card">
         <div class="info-item"><strong>Reader ID:</strong> {{ reader.reader_id }}</div>

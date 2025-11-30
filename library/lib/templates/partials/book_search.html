@@ -69,18 +69,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 targets.forEach(i => {
                     if (i >= cells.length) return;
                     const cell = cells[i];
-                    // store original text to avoid cumulative mark-ups
-                    if (!cell.dataset.originalText) {
-                        cell.dataset.originalText = cell.textContent;
-                    }
-                    const original = cell.dataset.originalText;
-                    if (!q) {
-                        cell.innerHTML = escapeHtml(original);
-                        return;
-                    }
-                    const pattern = new RegExp(escapeRegExp(q), 'ig');
-                    const highlighted = escapeHtml(original).replace(pattern, match => `<mark class="highlight">${match}</mark>`);
-                    cell.innerHTML = highlighted;
+                        // store original html to avoid removing links/markup when re-rendering
+                        if (!cell.dataset.originalHtml) {
+                            cell.dataset.originalHtml = cell.innerHTML;
+                        }
+                        const originalHtml = cell.dataset.originalHtml;
+                        if (!q) {
+                            cell.innerHTML = originalHtml;
+                            return;
+                        }
+                        // replace matching text inside the HTML string — this preserves anchors and other tags
+                        const pattern = new RegExp(escapeRegExp(q), 'ig');
+                        const highlighted = originalHtml.replace(pattern, match => `<mark class="highlight">${match}</mark>`);
+                        cell.innerHTML = highlighted;
                 });
                     });
 

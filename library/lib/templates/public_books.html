@@ -26,6 +26,7 @@
             <tr>
                 <th>Book Name</th>
                 <th>Author</th>
+                <th>Rating</th>
                 <th>Category</th>
                 <th>ISBN</th>
                 <th>Copies Available</th>
@@ -37,6 +38,7 @@
             <tr {% if book.category %}data-category-id="{{ book.category.id }}"{% endif %}>
                 <td><a href="{% url 'book_details' book.pk %}">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a></td>
                 <td>{% if query %}{{ book.author|highlight:query }}{% else %}{{ book.author }}{% endif %}</td>
+                <td>⭐ {{ book.combined_rating }}/5</td>
                 <td>{% if query %}{% if book.category %}{{ book.category.name|highlight:query }}{% endif %}{% else %}{% if book.category %}{{ book.category.name }}{% endif %}{% endif %}</td>
                 <td>{{ book.isbn }}</td>
                 <td>{{ book.number_in_stock }}</td>

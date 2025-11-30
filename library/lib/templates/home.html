@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <style>
@@ -14,6 +15,33 @@
         <h2>📚 Welcome to My Library</h2>
         <p>Explore books, track issued books, manage fines, and more!</p>
     </div>
+    
+  <!-- Homepage photo (place the attached image at static/images/library_home.jpg) -->
+  <div style="margin-top:20px; text-align:center;">
+    <img src="{% static 'images/library_home.png' %}" alt="Library" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+  </div>
+    
+  {% if books %}
+  <h3 style="margin-top:24px;color:#2c3e50;">Featured Books</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px;">
+    {% for book in books %}
+    <div style="border:1px solid #eee;border-radius:8px;padding:12px;background:#fff;">
+      <a href="{% url 'book_details' book.pk %}" style="text-decoration:none;color:inherit;">
+        <div style="height:140px;background:#f7f7f7;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          {% if book.image %}
+            <img src="{{ book.image.url }}" alt="{{ book.name }}" style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+            <span style="color:#999;">No image</span>
+          {% endif %}
+        </div>
+        <h4 style="margin:8px 0 4px 0;font-size:15px;">{{ book.name }}</h4>
+        <div style="font-size:13px;color:#666;">{{ book.author }}</div>
+        <div style="margin-top:8px;font-weight:600;color:#444;">⭐ {{ book.combined_rating }}/5</div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
 
 {% endblock %}

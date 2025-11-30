@@ -35,6 +35,7 @@
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Rating</th>
                 <th>ISBN</th>
                 <th>Author</th>
                 <th>Category</th>
@@ -127,7 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const category = escapeHtml(b.category || '');
                 const stock = escapeHtml(String(b.stock || ''));
                 const img = b.image ? `<img src="${escapeHtml(b.image)}" alt="${escapeHtml(b.name)}" style="max-width:50px;max-height:50px;border-radius:4px;">` : 'No image';
-                return `<tr${dataAttr}><td>${name}</td><td>${isbn}</td><td>${author}</td><td>${category}</td><td>${stock}</td><td>${img}</td></tr>`;
+                const ratingCell = b.combined_rating ? `⭐ ${escapeHtml(String(b.combined_rating))}/5` : '';
+                return `<tr${dataAttr}><td>${name}</td><td>${ratingCell}</td><td>${isbn}</td><td>${author}</td><td>${category}</td><td>${stock}</td><td>${img}</td></tr>`;
             }).join('');
             resultsBody.innerHTML = rows;
         } catch (e) {
