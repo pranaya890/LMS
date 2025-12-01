@@ -5,18 +5,18 @@
 {% block content %}
 <style>
   .search-container { margin:24px auto; max-width:900px; }
-  h2 { color:#2c3e50; margin-bottom:20px; }
-  h3 { color:#555; margin-top:24px; margin-bottom:16px; }
+    h2 { color:var(--text-dark); margin-bottom:20px; }
+    h3 { color:var(--text-secondary); margin-top:24px; margin-bottom:16px; }
   .search-form { background:white; padding:16px; border-radius:4px; margin-bottom:20px; display:flex; gap:8px; }
-  .search-form input { flex:1; padding:10px; border:1px solid #ddd; border-radius:4px; }
-  .search-form button { padding:10px 20px; background:#2196F3; color:white; border:none; border-radius:4px; cursor:pointer; }
-  .search-form button:hover { background:#0b7dda; }
+    .search-form input { flex:1; padding:10px; border:1px solid var(--light-border); border-radius:4px; }
+    .search-form button { padding:10px 20px; background:var(--primary-blue); color:white; border:none; border-radius:4px; cursor:pointer; }
+    .search-form button:hover { background:var(--primary-color-hover); }
   table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-  th { background:#2196F3; color:white; padding:12px; text-align:left; }
-  td { padding:12px; border-bottom:1px solid #ddd; }
-  tr:hover { background:#f5f5f5; }
+    th { background:var(--primary-blue); color:white; padding:12px; text-align:left; }
+    td { padding:12px; border-bottom:1px solid var(--light-border); }
+    tr:hover { background:var(--muted-bg); }
   img { max-width:50px; max-height:50px; border-radius:4px; }
-  mark.highlight { background: #ffeb3b; padding: 0 2px; border-radius:2px; }
+    mark.highlight { background: rgba(163,176,135,0.25); padding: 0 2px; border-radius:2px; }
 </style>
 
 <div class="search-container">
@@ -46,7 +46,7 @@
         <tbody id="search-results-body">
             {% for book in books %}
             <tr {% if book.category %}data-category-id="{{ book.category.id }}"{% endif %}>
-                <td><a href="{% url 'book_details' book.pk %}" style="color:#2196F3;text-decoration:none;">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a></td>
+                <td><a href="{% url 'book_details' book.pk %}" style="color:var(--primary-blue);text-decoration:none;">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a></td>
                 <td>{{ book.isbn }}</td>
                 <td>{% if query %}{{ book.author|highlight:query }}{% else %}{{ book.author }}{% endif %}</td>
                 <td>{% if query %}{{ book.category.name|highlight:query }}{% else %}{{ book.category.name }}{% endif %}</td>
@@ -61,7 +61,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" style="text-align:center;color:#999;">No books found.</td>
+                <td colspan="6" style="text-align:center;color:var(--muted-text);">No books found.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await res.json();
             // build tbody
             if (!data.books || data.books.length === 0) {
-                resultsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">No books found.</td></tr>';
+                resultsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted-text);">No books found.</td></tr>';
                 return;
             }
             // score and sort books so those with matches appear first; when query is empty, sort alphabetically
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const rows = data.books.map(b => {
                 const dataAttr = b.category_id ? ` data-category-id="${escapeHtml(String(b.category_id))}"` : '';
-                const name = `<a href="${escapeHtml(b.url)}" style="color:#2196F3;text-decoration:none;">${highlightText(b.name, term)}</a>`;
+                const name = `<a href="${escapeHtml(b.url)}" style="color:var(--primary-blue);text-decoration:none;">${highlightText(b.name, term)}</a>`;
                 const isbn = escapeHtml(b.isbn || '');
                 const author = highlightText(b.author || '', term);
                 const category = escapeHtml(b.category || '');

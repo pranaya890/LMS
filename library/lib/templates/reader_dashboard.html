@@ -14,8 +14,8 @@
   table thead th { background: var(--primary-blue); color: white; padding: 12px; text-align: left; font-weight: 600; }
   table tbody td { padding: 12px; border-bottom: 1px solid var(--border-color); }
   table tbody tr:last-child td { border-bottom: none; }
-  table tbody tr:hover { background: var(--primary-bg); }
-  .not-returned { color: #ff9800; font-weight: 600; }
+    table tbody tr:hover { background: var(--muted-bg); }
+    .not-returned { color: var(--warning-color); font-weight: 600; }
 </style>
 
 <div class="dashboard-container">
@@ -64,7 +64,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" style="text-align:center;color:#999;padding:20px;">You have no issued books.</td>
+                    <td colspan="4" style="text-align:center;color:var(--muted-text);padding:20px;">You have no issued books.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -88,7 +88,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="2" style="text-align:center;color:#999;padding:20px;">No pending fines.</td>
+                    <td colspan="2" style="text-align:center;color:var(--muted-text);padding:20px;">No pending fines.</td>
                 </tr>
                 {% endfor %}
             </tbody>

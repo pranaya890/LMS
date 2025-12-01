@@ -6,11 +6,11 @@
   .reader-book { display:flex; gap:20px; }
   .reader-meta { flex:2; }
   .reader-analytics { flex:1.5; }
-  .analytics-card { background:#f9f9f9; border:1px solid #ddd; border-radius:8px; padding:16px; }
-  .analytics-card h3 { margin-top:0; color:#2c3e50; }
-  .analytics-stat { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; }
+    .analytics-card { background:var(--muted-card-bg); border:1px solid var(--light-border); border-radius:8px; padding:16px; }
+    .analytics-card h3 { margin-top:0; color:var(--text-dark); }
+    .analytics-stat { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--light-border); }
   .analytics-stat:last-child { border-bottom:none; }
-  .analytics-stat strong { color:#2980b9; }
+    .analytics-stat strong { color: var(--primary-color); }
   #readerIssuanceChart { max-height:300px; margin-top:12px; }
 </style>
 
@@ -19,7 +19,7 @@
         {% if book.image %}
             <img src="{{ book.image.url }}" alt="{{ book.name }}" style="max-width:240px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.06);">
         {% else %}
-            <div style="width:240px;height:320px;display:flex;align-items:center;justify-content:center;background:#f3f3f3;color:#888;">No image</div>
+            <div style="width:240px;height:320px;display:flex;align-items:center;justify-content:center;background:var(--muted-bg);color:var(--muted-text);">No image</div>
         {% endif %}
     </div>
 
@@ -32,7 +32,7 @@
         <p id="rating-paragraph"><strong>Rating:</strong>
             {% if combined_rating %}
                 ⭐ {{ combined_rating }}/5
-                <small style="color:#666;">(Admin: {{ book.rating }} | Readers Avg: {{ avg_reader_rating }})</small>
+                <small style="color:var(--text-secondary);">(Admin: {{ book.rating }} | Readers Avg: {{ avg_reader_rating }})</small>
             {% else %}
                 ⭐ {{ book.rating }}/5
             {% endif %}
@@ -68,8 +68,8 @@
                     {% csrf_token %}
                     <button type="submit">Request Issue</button>
                 </form>
-            {% else %}
-                <span style="color:#888">Out of Stock</span>
+                {% else %}
+                <span style="color:var(--muted-text)">Out of Stock</span>
             {% endif %}
         </div>
     </div>
@@ -103,13 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Books Issued',
                 data: quantities,
-                borderColor: '#4CAF50',
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                borderColor: '#A3B087',
+                backgroundColor: 'rgba(163, 176, 135, 0.1)',
                 borderWidth: 2,
                 fill: true,
                 tension: 0.3,
                 pointRadius: 3,
-                pointBackgroundColor: '#4CAF50'
+                pointBackgroundColor: '#A3B087'
             }]
         },
         options: {
@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 // update rating display (replace contents of the paragraph)
                 const ratingParagraph = document.getElementById('rating-paragraph');
-                if (ratingParagraph) {
-                    ratingParagraph.innerHTML = `<strong>Rating:</strong> ⭐ ${data.combined_rating}/5 <small style="color:#666;">(Admin: ${BOOK_ADMIN_RATING} | Readers Avg: ${data.avg_reader_rating})</small>`;
+                    if (ratingParagraph) {
+                    ratingParagraph.innerHTML = `<strong>Rating:</strong> ⭐ ${data.combined_rating}/5 <small style="color:var(--text-secondary);">(Admin: ${BOOK_ADMIN_RATING} | Readers Avg: ${data.avg_reader_rating})</small>`;
                 }
                 // update star highlights to match saved value
                 ratingInput.value = String(data.user_rating || ratingInput.value);
@@ -215,24 +215,24 @@ document.addEventListener('DOMContentLoaded', function() {
     {% if popular_books %}
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
             {% for pop_book in popular_books %}
-                <div style="border:1px solid #ddd;border-radius:8px;padding:12px;background:#f9f9f9;transition:box-shadow 0.2s;">
-                    <div style="height:180px;background:#f0f0f0;border-radius:4px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                <div style="border:1px solid var(--light-border);border-radius:8px;padding:12px;background:var(--muted-card-bg);transition:box-shadow 0.2s;">
+                    <div style="height:180px;background:var(--muted-bg);border-radius:4px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
                         {% if pop_book.image %}
                             <img src="{{ pop_book.image.url }}" alt="{{ pop_book.name }}" style="width:100%;height:100%;object-fit:cover;">
                         {% else %}
-                            <span style="color:#999;">No image</span>
+                            <span style="color:var(--muted-text);">No image</span>
                         {% endif %}
                     </div>
                     <h4 style="margin:8px 0;font-size:14px;">{{ pop_book.name }}</h4>
-                    <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Author:</strong> {{ pop_book.author }}</p>
-                    <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Rating:</strong> ⭐ {{ pop_book.rating }}/5</p>
-                    <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Stock:</strong> {{ pop_book.number_in_stock }}</p>
-                    <a href="{% url 'reader_book_detail' pop_book.pk %}" style="display:inline-block;margin-top:8px;padding:6px 12px;background:#4CAF50;color:white;border-radius:4px;text-decoration:none;font-size:12px;">View Details</a>
+                    <p style="margin:4px 0;font-size:12px;color:var(--text-secondary);"><strong>Author:</strong> {{ pop_book.author }}</p>
+                    <p style="margin:4px 0;font-size:12px;color:var(--text-secondary);"><strong>Rating:</strong> ⭐ {{ pop_book.rating }}/5</p>
+                    <p style="margin:4px 0;font-size:12px;color:var(--text-secondary);"><strong>Stock:</strong> {{ pop_book.number_in_stock }}</p>
+                    <a href="{% url 'reader_book_detail' pop_book.pk %}" style="display:inline-block;margin-top:8px;padding:6px 12px;background:var(--accent-green);color:white;border-radius:4px;text-decoration:none;font-size:12px;">View Details</a>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <p style="color:#999;">No popular books available yet.</p>
+        <p style="color:var(--muted-text);">No popular books available yet.</p>
     {% endif %}
 </section>
 

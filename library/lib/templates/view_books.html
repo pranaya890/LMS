@@ -4,17 +4,17 @@
 {% block content %}
 <style>
   .view-container { margin:24px; }
-  h2 { color:#2c3e50; margin-bottom:20px; }
-  .add-btn { display:inline-block; margin-bottom:16px; padding:10px 16px; background:#2196F3; color:white; text-decoration:none; border-radius:4px; }
-  .add-btn:hover { background:#0b7dda; }
-  table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-  th { background:#2196F3; color:white; padding:12px; text-align:left; }
-  td { padding:12px; border-bottom:1px solid #ddd; }
-  tr:hover { background:#f5f5f5; }
+  h2 { color: var(--text-dark); margin-bottom:20px; }
+  .add-btn { display:inline-block; margin-bottom:16px; padding:10px 16px; background:var(--primary-blue); color:white; text-decoration:none; border-radius:4px; }
+  .add-btn:hover { background:var(--primary-color-hover); }
+  table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.06); }
+  th { background:var(--primary-blue); color:white; padding:12px; text-align:left; }
+  td { padding:12px; border-bottom:1px solid var(--border-color); }
+  tr:hover { background: rgba(67,86,99,0.03); }
   img { max-width:50px; max-height:50px; border-radius:4px; }
-  a { color:#2196F3; text-decoration:none; margin:0 5px; }
+  a { color:var(--primary-blue); text-decoration:none; margin:0 5px; }
   a:hover { text-decoration:underline; }
-  .delete-link { color:#d32f2f; }
+    .delete-link { color:var(--danger-color); }
 </style>
 
 <div class="view-container">
@@ -42,7 +42,7 @@
                 <td><a href="{% url 'admin_book_details' book.pk %}">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a></td>
                 <td>{{ book.isbn }}</td>
                 <td>{{ book.author }}</td>
-                <td>{{ book.category.name }}</td>
+                <td>{% if book.category %}{{ book.category.name }}{% endif %}</td>
                 <td>{{ book.number_in_stock }}</td>
                 <td>⭐ {{ book.combined_rating }}/5</td>
                 <td>
@@ -59,7 +59,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="8" style="text-align:center;color:#999;">No books available.</td>
+                <td colspan="8" style="text-align:center;color:var(--muted-text);">No books available.</td>
             </tr>
             {% endfor %}
         </tbody>

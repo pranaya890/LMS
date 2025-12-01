@@ -3,18 +3,18 @@
 {% block content %}
 <style>
   .details-container { margin:24px; }
-  h2 { color:#2c3e50; margin-bottom:20px; }
-  h3 { color:#555; margin-top:24px; margin-bottom:16px; }
-  .info-card { background:white; padding:16px; border-radius:4px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    h2 { color:var(--text-dark); margin-bottom:20px; }
+    h3 { color:var(--text-secondary); margin-top:24px; margin-bottom:16px; }
+    .info-card { background:var(--card-bg); padding:16px; border-radius:4px; margin-bottom:20px; box-shadow:var(--shadow-sm); }
   .info-item { margin:8px 0; line-height:1.8; }
   table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-bottom:24px; }
-  th { background:#2196F3; color:white; padding:12px; text-align:left; }
-  td { padding:12px; border-bottom:1px solid #ddd; }
-  tr:hover { background:#f5f5f5; }
+    th { background:var(--primary-blue); color:white; padding:12px; text-align:left; }
+    td { padding:12px; border-bottom:1px solid var(--light-border); }
+    tr:hover { background:var(--muted-bg); }
   .actions { margin-top:24px; }
-  a { color:#2196F3; text-decoration:none; margin-right:16px; }
+    a { color:var(--primary-blue); text-decoration:none; margin-right:16px; }
   a:hover { text-decoration:underline; }
-  .delete-link { color:#d32f2f; }
+    .delete-link { color:var(--danger-color); }
 </style>
 
 <div class="details-container">
@@ -55,13 +55,13 @@
                     {% if issue.returned_date %}
                         {{ issue.returned_date }}
                     {% else %}
-                        <span style="color:#ff9800;">Not Returned</span>
+                        <span style="color:var(--warning-color);">Not Returned</span>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4" style="text-align:center;color:#999;">No books issued.</td>
+                <td colspan="4" style="text-align:center;color:var(--muted-text);">No books issued.</td>
             </tr>
             {% endfor %}
         </tbody>

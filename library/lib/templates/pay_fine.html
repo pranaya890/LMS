@@ -2,16 +2,16 @@
 
 {% block content %}
 <style>
-  .fine-container { max-width:600px; margin:24px auto; padding:20px; background:#f9f9f9; border-radius:8px; }
-  h2 { color:#2c3e50; margin-bottom:24px; }
-  .fine-info { background:white; padding:16px; border-radius:4px; margin-bottom:20px; border-left:4px solid #ff9800; }
-  .info-item { margin:8px 0; line-height:1.6; }
-  .amount { font-size:18px; font-weight:bold; color:#d32f2f; }
-  .button-group { display:flex; gap:12px; margin-top:20px; }
-  button, a { padding:10px 20px; border-radius:4px; border:none; cursor:pointer; text-decoration:none; font-size:14px; }
-  button[type="submit"] { background:#4CAF50; color:white; }
-  a { background:#2196F3; color:white; }
-  .paid-msg { background:#c8e6c9; color:#2e7d32; padding:12px; border-radius:4px; border-left:4px solid #4CAF50; }
+    .fine-container { max-width:600px; margin:24px auto; padding:20px; background:var(--card-bg,#ffffff); border-radius:8px; box-shadow: var(--card-shadow, 0 1px 3px rgba(0,0,0,0.06)); }
+    h2 { color:var(--text-dark,#313647); margin-bottom:24px; }
+    .fine-info { background:var(--primary-bg,#FFF8D4); padding:16px; border-radius:4px; margin-bottom:20px; border-left:4px solid var(--accent-green,#A3B087); }
+    .info-item { margin:8px 0; line-height:1.6; }
+    .amount { font-size:18px; font-weight:bold; color:var(--danger-color,#d32f2f); }
+    .button-group { display:flex; gap:12px; margin-top:20px; }
+    button, a.btn { padding:10px 20px; border-radius:4px; border:none; cursor:pointer; text-decoration:none; font-size:14px; display:inline-block; text-align:center; }
+    button[type="submit"] { background:var(--accent-green,#A3B087); color:var(--button-text,#ffffff); }
+    a.btn.primary { background:var(--primary-blue,#435663); color:var(--button-text,#ffffff); }
+    .paid-msg { background:var(--success-bg,#c8e6c9); color:var(--accent-green,#2e7d32); padding:12px; border-radius:4px; border-left:4px solid var(--accent-green,#A3B087); }
 </style>
 
 <div class="fine-container">
@@ -29,14 +29,14 @@
             <strong>✓ Already Paid</strong>
         </div>
         <div style="margin-top:20px;">
-            <a href="{% url 'view_fines' %}" style="background:#2196F3;color:white;">Back to Fines</a>
+            <a href="{% url 'view_fines' %}" class="btn primary">Back to Fines</a>
         </div>
     {% else %}
         <form method="post">
             {% csrf_token %}
             <div class="button-group">
                 <button type="submit">Mark as Paid</button>
-                <a href="{% url 'view_fines' %}">Cancel</a>
+                <a href="{% url 'view_fines' %}" class="btn">Cancel</a>
             </div>
         </form>
     {% endif %}
