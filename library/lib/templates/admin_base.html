@@ -42,10 +42,8 @@
 
 <header>
     <h1>📊 Admin Panel</h1>
-    <nav>
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'public_books' %}">Library</a>
-    </nav>
+    {# removed Home and Library links to avoid navigating away and logging out admin #}
+    <nav></nav>
     <div class="admin-nav">
         <a href="{% url 'admin_dashboard' %}">Dashboard</a>
         <a href="{% url 'view_books' %}">Books</a>
@@ -54,6 +52,7 @@
         <a href="{% url 'view_fines' %}">Fines</a>
         <a href="{% url 'admin_issue_requests' %}">Requests</a>
         <a href="{% url 'view_categories' %}">Categories</a>
+        <a href="{% url 'admin_profile' %}">Profile</a>
         <a href="{% url 'logout_admin' %}">Logout</a>
     </div>
 </header>

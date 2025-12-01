@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from .forms import BookForm,ReaderForm,IssueForm,ReaderRegisterForm
+from .forms import BookForm,ReaderForm,IssueForm,ReaderRegisterForm, ReaderProfileForm, AdminProfileForm, PasswordChangeForm
 from .models import Book,Reader,Issue,Fine,IssueRequest,Admin,Category,Notification,BookIssuanceRecord, BookRating
 from django.db.models import Q, Count, Avg
 from django.utils import timezone
@@ -520,6 +520,112 @@ def reader_issued_books(request):
     })
 
 
+def edit_profile(request):
+    """Allow logged-in reader to edit their profile and change password.
+
+    If password is changed, the current session will be logged out and user redirected to login.
+    """
+    reader_id = request.session.get('reader_id')
+    if not reader_id:
+        return redirect('login_reader')
+
+    reader = get_object_or_404(Reader, id=reader_id)
+
+    if request.method == 'POST':
+        form = ReaderProfileForm(request.POST, request.FILES, instance=reader)
+        if form.is_valid():
+            # Preserve originals for fields we only want to change if explicitly provided
+            original_password = reader.password
+            original_image = reader.image
+
+            # Let the form populate an instance but don't commit yet
+            instance = form.save(commit=False)
+
+            # Handle password: only change if user entered a non-empty value
+            new_pw = form.cleaned_data.get('password')
+            pw_changed = False
+            if new_pw and str(new_pw).strip():
+                instance.password = new_pw
+                pw_changed = True
+            else:
+                instance.password = original_password
+
+            # Handle image: if no new image was uploaded, keep the original
+            new_image = form.cleaned_data.get('image')
+            if new_image:
+                instance.image = new_image
+            else:
+                instance.image = original_image
+
+            # Save the instance with updated fields
+            instance.save()
+
+            if pw_changed:
+                # Log out the current session as requested
+                if 'reader_id' in request.session:
+                    del request.session['reader_id']
+                if 'is_staff_member' in request.session:
+                    del request.session['is_staff_member']
+                messages.success(request, 'Password changed — please log in again.')
+                return redirect('login_reader')
+
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('reader_dashboard')
+    else:
+        # Pre-fill form but do not show existing password
+        initial = {
+            'name': reader.name,
+            'date_of_birth': reader.date_of_birth,
+            'phone_number': reader.phone_number,
+            'address': reader.address,
+        }
+        form = ReaderProfileForm(instance=reader, initial=initial)
+
+    return render(request, 'edit_profile.html', {'form': form, 'reader': reader})
+
+
+def change_password(request):
+    """Allow logged-in reader to change password on a separate page."""
+    reader_id = request.session.get('reader_id')
+    if not reader_id:
+        return redirect('login_reader')
+
+    reader = get_object_or_404(Reader, id=reader_id)
+
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.POST)
+        if form.is_valid():
+            new_pw = form.cleaned_data['password']
+            # Keep reader passwords plain-text for now (consistent with existing behavior)
+            reader.password = new_pw
+            reader.save()
+            # Invalidate session and ask to login again
+            if 'reader_id' in request.session:
+                del request.session['reader_id']
+            if 'is_staff_member' in request.session:
+                del request.session['is_staff_member']
+            messages.success(request, 'Password changed — please log in again.')
+            return redirect('login_reader')
+    else:
+        form = PasswordChangeForm()
+
+    return render(request, 'change_password.html', {'form': form, 'reader': reader})
+
+
+def reader_profile(request):
+    """Display the logged-in reader's profile on a dedicated page."""
+    reader_id = request.session.get('reader_id')
+    if not reader_id:
+        return redirect('login_reader')
+
+    reader = get_object_or_404(Reader, id=reader_id)
+    unread_notif_count = reader.notifications.filter(read=False).count()
+    return render(request, 'reader_profile.html', {
+        'reader': reader,
+        'unread_notif_count': unread_notif_count,
+    })
+
+
 ### admin
 def register_admin(request):
     from .forms import AdminRegisterForm
@@ -572,6 +678,92 @@ def logout_admin(request):
     if 'admin_id' in request.session:
         del request.session['admin_id']
     return redirect('home')
+
+
+def edit_admin_profile(request):
+    """Allow logged-in admin to edit their profile including picture and password."""
+    admin_id = request.session.get('admin_id')
+    if not admin_id:
+        return redirect('login_admin')
+
+    admin = get_object_or_404(Admin, id=admin_id)
+
+    if request.method == 'POST':
+        form = AdminProfileForm(request.POST, request.FILES, instance=admin)
+        if form.is_valid():
+            # Preserve originals to avoid overwriting when fields are left blank
+            original_password = admin.password
+            original_image = admin.image
+
+            instance = form.save(commit=False)
+
+            # Handle password change only when a non-empty value is provided
+            new_pw = form.cleaned_data.get('password')
+            pw_changed = False
+            if new_pw and str(new_pw).strip():
+                instance.password = new_pw
+                pw_changed = True
+            else:
+                instance.password = original_password
+
+            # Keep existing image if none uploaded
+            new_image = form.cleaned_data.get('image')
+            if new_image:
+                instance.image = new_image
+            else:
+                instance.image = original_image
+
+            instance.save()
+
+            if pw_changed:
+                # log out admin session
+                if 'admin_id' in request.session:
+                    del request.session['admin_id']
+                messages.success(request, 'Password changed — please log in again.')
+                return redirect('login_admin')
+
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('admin_dashboard')
+    else:
+        form = AdminProfileForm(instance=admin)
+
+    return render(request, 'edit_admin_profile.html', {'form': form, 'admin': admin})
+
+
+def admin_profile(request):
+    """Display admin's profile page with image and details."""
+    admin_id = request.session.get('admin_id')
+    if not admin_id:
+        return redirect('login_admin')
+
+    admin = get_object_or_404(Admin, id=admin_id)
+    return render(request, 'admin_profile.html', {'admin': admin})
+
+
+def change_admin_password(request):
+    """Allow logged-in admin to change password on a separate page."""
+    admin_id = request.session.get('admin_id')
+    if not admin_id:
+        return redirect('login_admin')
+
+    admin = get_object_or_404(Admin, id=admin_id)
+
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.POST)
+        if form.is_valid():
+            new_pw = form.cleaned_data['password']
+            # Admin passwords are stored hashed — use make_password
+            admin.password = make_password(new_pw)
+            admin.save()
+            # Invalidate admin session
+            if 'admin_id' in request.session:
+                del request.session['admin_id']
+            messages.success(request, 'Password changed — please log in again.')
+            return redirect('login_admin')
+    else:
+        form = PasswordChangeForm()
+
+    return render(request, 'change_admin_password.html', {'form': form, 'admin': admin})
 
 
 # View all pending requests

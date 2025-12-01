@@ -49,6 +49,7 @@ class Admin(models.Model):
     admin_id = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=100)
     password = models.CharField(max_length=128, default='temp123')  # hashed password recommended
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -61,6 +62,7 @@ class Reader(models.Model):
     phone_number = models.CharField(max_length=15, unique=True)  # to avoid duplicates
     address = models.TextField()
     password = models.CharField(max_length=128, default='temp123')
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     # Flag for college staff members who have different borrowing rules (e.g. longer due dates)
     is_staff_member = models.BooleanField(default=False)
 

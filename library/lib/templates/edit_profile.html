@@ -1,0 +1,65 @@
+{% extends 'reader_base.html' %}
+
+{% block content %}
+<style>
+  .form-container { max-width:600px; margin:24px auto; padding:20px; background:var(--card-bg); border-radius:8px; }
+  h2 { color:var(--text-dark); margin-bottom:20px; }
+  form { display:block; }
+  .form-row { margin-bottom:12px; }
+  label { display:block; font-weight:600; margin-bottom:6px; }
+  input, textarea { width:100%; padding:8px; border:1px solid var(--light-border); border-radius:6px; }
+  .button-row { margin-top:16px; display:flex; gap:12px; }
+</style>
+
+<div class="form-container">
+    <h2>✏️ Edit Profile</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if reader.image %}
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+            <div style="width:120px;height:120px;flex:0 0 120px;border-radius:6px;overflow:hidden;border:1px solid var(--light-border);display:flex;align-items:center;justify-content:center;">
+                <img src="{{ reader.image.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div style="flex:1;">
+                <div style="color:var(--text-secondary);font-size:0.95rem;">Current profile picture</div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="form-row">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}<div class="error">{{ form.name.errors }}</div>{% endif %}
+        </div>
+        <div class="form-row">
+            {{ form.date_of_birth.label_tag }}
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}<div class="error">{{ form.date_of_birth.errors }}</div>{% endif %}
+        </div>
+        <div class="form-row">
+            {{ form.phone_number.label_tag }}
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}<div class="error">{{ form.phone_number.errors }}</div>{% endif %}
+        </div>
+        <div class="form-row">
+            {{ form.address.label_tag }}
+            {{ form.address }}
+            {% if form.address.errors %}<div class="error">{{ form.address.errors }}</div>{% endif %}
+        </div>
+        <div class="form-row">
+            {# Password changes are handled on a separate page. #}
+            {# No password fields here to avoid accidental changes. #}
+        </div>
+        <div class="form-row">
+            {{ form.image.label_tag }}
+            {{ form.image }}
+            {% if form.image.errors %}<div class="error">{{ form.image.errors }}</div>{% endif %}
+        </div>
+
+        <div class="button-row">
+            <button type="submit" class="btn">Save Changes</button>
+            <a href="{% url 'reader_dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

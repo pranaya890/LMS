@@ -19,22 +19,18 @@
 </style>
 
 <div class="dashboard-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
     <div class="welcome-section">
-        <h2>👋 Welcome, {{ reader.name }}
-            <span class="staff-badge">
-                {% if reader.is_staff_member %}
-                    Teacher
-                {% else %}
-                    Student
-                {% endif %}
-            </span>
+        <h2 style="margin:0 0 8px 0;display:flex;align-items:center;gap:12px;">👋 {{ reader.name }}
+            <span class="staff-badge">{% if reader.is_staff_member %}Teacher{% else %}Student{% endif %}</span>
+            <a href="{% url 'reader_profile' %}" style="margin-left:12px; font-size:0.9rem;" class="btn btn-primary">View Profile</a>
+            <a href="{% url 'edit_profile' %}" style="margin-left:12px; font-size:0.9rem;" class="btn btn-secondary">Edit Profile</a>
+            <a href="{% url 'change_password' %}" style="margin-left:8px; font-size:0.9rem;" class="btn btn-warning">Change Password</a>
         </h2>
-    
-    <div class="info-card">
-        <div class="info-item"><strong>Reader ID:</strong> {{ reader.reader_id }}</div>
-        <div class="info-item"><strong>Date of Birth:</strong> {{ reader.date_of_birth }}</div>
-        <div class="info-item"><strong>Phone:</strong> {{ reader.phone_number }}</div>
-        <div class="info-item"><strong>Address:</strong> {{ reader.address }}</div>
     </div>
 
     <h3 class="section-title">📚 Your Issued Books</h3>

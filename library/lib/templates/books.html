@@ -22,11 +22,7 @@
 <div class="view-container">
     {% include 'partials/book_search.html' %}
     
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-info">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+    {# messages intentionally not shown here — profile update messages display on Dashboard #}
 
     <h2>📚 All Books</h2>
     

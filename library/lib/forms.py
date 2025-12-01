@@ -52,11 +52,53 @@ class ReaderRegisterForm(forms.ModelForm):
         fields = ['reader_id', 'name', 'date_of_birth', 'phone_number', 'address', 'password', 'is_staff_member']
 
 
+class ReaderProfileForm(forms.ModelForm):
+    class Meta:
+        model = Reader
+        # Exclude reader_id from profile edits to avoid changing the unique login identifier
+        fields = ['name', 'date_of_birth', 'phone_number', 'address', 'image']
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={'accept': 'image/*'})
+        }
+    def clean(self):
+        cleaned = super().clean()
+        return cleaned
+
+
 class AdminRegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
 
     class Meta:
         model = Admin
         fields = ['admin_id', 'name', 'password']
+
+
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = Admin
+        fields = ['name', 'image']
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={'accept': 'image/*'})
+        }
+    def clean(self):
+        cleaned = super().clean()
+        return cleaned
+
+
+class PasswordChangeForm(forms.Form):
+    password = forms.CharField(widget=forms.PasswordInput, label='New Password')
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirm New Password')
+
+    def clean(self):
+        cleaned = super().clean()
+        pw = cleaned.get('password')
+        pw2 = cleaned.get('confirm_password')
+        if not pw:
+            raise forms.ValidationError('Password is required.')
+        if pw != pw2:
+            raise forms.ValidationError('New password and confirmation do not match.')
+        if len(pw) < 4:
+            raise forms.ValidationError('Password must be at least 4 characters long.')
+        return cleaned
 
 

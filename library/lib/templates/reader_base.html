@@ -61,12 +61,11 @@
 
 <header>
     <h1>📚 Reader Dashboard</h1>
-    <nav>
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'public_books' %}">Library</a>
-    </nav>
+    {# removed Home and Library links to avoid navigating away and logging out reader #}
+    <nav></nav>
     <div class="reader-nav">
         <a href="{% url 'reader_dashboard' %}">Dashboard</a>
+        <a href="{% url 'reader_profile' %}">Profile</a>
         <a href="{% url 'reader_view_books' %}">Browse Books</a>
         <a href="{% url 'reader_issued_books' %}">My Books</a>
         <a href="{% url 'reader_notifications' %}">

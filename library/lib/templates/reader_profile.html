@@ -1,0 +1,43 @@
+{% extends 'reader_base.html' %}
+
+{% block content %}
+<style>
+  .profile-container { max-width:900px; margin:24px auto; display:flex; gap:20px; align-items:flex-start; }
+  .profile-photo { flex:0 0 30%; max-width:30%; }
+  .profile-photo .box { width:100%; padding-top:100%; position:relative; border-radius:8px; overflow:hidden; border:1px solid var(--light-border); background:var(--muted-bg); }
+  .profile-photo img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
+  .profile-info { flex:1; max-width:70%; }
+  .profile-info h2 { margin:0 0 8px 0; color:var(--text-dark); }
+  .info-card { background:var(--card-bg); padding:16px; border-radius:8px; border-left:4px solid var(--primary-blue); }
+  .info-item { margin:8px 0; }
+  .actions { margin-top:12px; display:flex; gap:8px; }
+</style>
+
+<div class="profile-container">
+    <div class="profile-photo">
+        <div class="box">
+            {% if reader.image %}
+                <img src="{{ reader.image.url }}" alt="{{ reader.name }}">
+            {% else %}
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted-text);">No photo</div>
+            {% endif %}
+        </div>
+        <div class="actions">
+            <a href="{% url 'edit_profile' %}" class="btn">Edit Profile</a>
+            <a href="{% url 'change_password' %}" class="btn btn-warning">Change Password</a>
+        </div>
+    </div>
+
+    <div class="profile-info">
+        <h2>👤 {{ reader.name }}</h2>
+        <div class="info-card">
+            <div class="info-item"><strong>Reader ID:</strong> {{ reader.reader_id }}</div>
+            <div class="info-item"><strong>Date of Birth:</strong> {{ reader.date_of_birth }}</div>
+            <div class="info-item"><strong>Phone:</strong> {{ reader.phone_number }}</div>
+            <div class="info-item"><strong>Address:</strong> {{ reader.address }}</div>
+            <div class="info-item"><strong>Member since:</strong> {% if reader.pk %}ID {{ reader.pk }}{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
