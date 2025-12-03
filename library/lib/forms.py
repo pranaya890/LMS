@@ -50,6 +50,9 @@ class ReaderRegisterForm(forms.ModelForm):
     class Meta:
         model = Reader
         fields = ['reader_id', 'name', 'date_of_birth', 'phone_number', 'address', 'password', 'is_staff_member']
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'})
+        }
 
 
 class ReaderProfileForm(forms.ModelForm):

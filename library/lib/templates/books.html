@@ -47,7 +47,6 @@
             </td>
                 <td>{{ book.author }}</td>
                 <td>⭐ {{ book.combined_rating }}/5</td>
-            <td>{% if query %}{{ book.author|highlight:query }}{% else %}{{ book.author }}{% endif %}</td>
             <td>{% if query %}{{ book.category|highlight:query }}{% else %}{{ book.category }}{% endif %}</td>
                 <td>{{ book.isbn }}</td>
                 <td>{{ book.number_in_stock }}</td>

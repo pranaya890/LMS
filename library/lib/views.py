@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .forms import BookForm,ReaderForm,IssueForm,ReaderRegisterForm, ReaderProfileForm, AdminProfileForm, PasswordChangeForm
 from .models import Book,Reader,Issue,Fine,IssueRequest,Admin,Category,Notification,BookIssuanceRecord, BookRating
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Case, When, Value, F, IntegerField
 from django.utils import timezone
 from django.utils.timezone import now
 from django.contrib.auth.hashers import make_password, check_password
@@ -28,10 +28,54 @@ def home(request):
         'books': books,
     })
 
+# def public_books(request):
+#     books = Book.objects.all().order_by('name')  # sorted alphabetically
+#     categories = Category.objects.all()
+#     return render(request, 'public_books.html', {'books': books, 'categories': categories})
+
+
 def public_books(request):
-    books = Book.objects.all().order_by('name')  # sorted alphabetically
+    # Accept optional query and category filters via GET
+    q = request.GET.get('q', '').strip()
+    category_id = request.GET.get('category', '').strip()
+
+    books = Book.objects.all()
+    if q:
+        books = books.filter(
+            Q(name__icontains=q) |
+            Q(author__icontains=q) |
+            Q(isbn__icontains=q) |
+            Q(category__name__icontains=q)
+        ).annotate(
+            # Prioritize: name match (0) > author match (1) > other matches (2)
+            match_priority=Case(
+                When(name__icontains=q, then=Value(0)),
+                When(author__icontains=q, then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField()
+            )
+        ).order_by('match_priority', 'name')
+    else:
+        books = books.order_by('name')  # sorted alphabetically
+    
+    if category_id:
+        try:
+            cid = int(category_id)
+            books = books.filter(category_id=cid)
+        except ValueError:
+            pass
+
     categories = Category.objects.all()
-    return render(request, 'public_books.html', {'books': books, 'categories': categories})
+    return render(request, 'public_books.html', {
+        'books': books,
+        'categories': categories,
+        'query': q,
+        'selected_category': category_id,
+    })
+
+
+
+
 
 
 def add_book(request):

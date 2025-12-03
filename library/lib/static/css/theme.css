@@ -1,0 +1,99 @@
+/* Form container and input sizing */
+.form-container {
+    max-width: 350px;
+    margin: 20px 0;
+}
+
+.form-container input[type="text"],
+.form-container input[type="password"],
+.form-container input[type="email"],
+.form-container input[type="date"],
+.form-container input[type="number"],
+.form-container input[type="tel"],
+.form-container textarea,
+.form-container select {
+    width: 200px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    box-sizing: border-box !important;
+}
+
+.form-container input[type="file"] {
+    width: 100% !important;
+}
+
+.form-container p {
+    margin: 0 0 12px 0 !important;
+    padding: 0 !important;
+}
+
+.form-container ul {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.form-container li {
+    margin: 8px 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.form-container label {
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+.form-container button {
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    border: none !important;
+    border-radius: 4px !important;
+    background-color: #007bff !important;
+    color: white !important;
+    cursor: pointer !important;
+    margin-right: 10px !important;
+    margin-top: 10px !important;
+}
+
+.form-container button:hover {
+    background-color: #0056b3 !important;
+}
+
+.form-container a {
+    display: inline-block !important;
+    margin-top: 15px !important;
+    text-decoration: none !important;
+    color: #007bff !important;
+    font-size: 14px !important;
+}
+
+.form-container a:hover {
+    text-decoration: underline !important;
+}
+
+/* Help text styling */
+.form-container .helptext {
+    display: block !important;
+    font-size: 12px !important;
+    color: #666 !important;
+    margin-top: 3px !important;
+}
+
+/* Error messages */
+.form-container .errorlist {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 5px 0 !important;
+    color: #dc3545 !important;
+    font-size: 13px !important;
+}
+
+.form-container .errorlist li {
+    margin: 0 !important;
+    padding: 0 !important;
+}

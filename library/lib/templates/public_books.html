@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load highlight %}
 
 {% block content %}
 <style>
   .view-container { margin:24px; }
-    h2 { color:var(--text-dark); margin-bottom:20px; }
+  h2 { color:var(--text-dark); margin-bottom:20px; }
   table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-    th { background:var(--primary-blue); color:white; padding:12px; text-align:left; }
-    td { padding:12px; border-bottom:1px solid var(--light-border); max-width:300px; }
-    tr:hover { background:var(--muted-bg); }
-    a { color:var(--primary-blue); text-decoration:none; }
+  th { background:var(--primary-blue); color:white; padding:12px; text-align:left; }
+  td { padding:12px; border-bottom:1px solid var(--light-border); max-width:300px; }
+  tr:hover { background:var(--muted-bg); }
+  a { color:var(--primary-blue); text-decoration:none; }
   a:hover { text-decoration:underline; }
-    .no-desc { color:var(--muted-text); }
+  .no-desc { color:var(--muted-text); }
 </style>
 
 <div class="view-container">
@@ -30,25 +31,23 @@
                 <th>Category</th>
                 <th>ISBN</th>
                 <th>Copies Available</th>
-                <th>Description</th>
+                <!-- Description removed (preview on hover) -->
             </tr>
         </thead>
         <tbody>
             {% for book in books %}
-            <tr {% if book.category %}data-category-id="{{ book.category.id }}"{% endif %}>
+            <tr {% if book.category %}data-category-id="{{ book.category.id }}"{% endif %}
+                data-name="{{ book.name|escape }}"
+                data-author="{{ book.author|default:''|escape }}"
+                data-desc="{{ book.description|default:''|truncatechars:180|escape }}"
+                data-image="{% if book.image %}{{ book.image.url }}{% else %}{% static 'images/placeholder_book.png' %}{% endif %}">
                 <td><a href="{% url 'book_details' book.pk %}">{% if query %}{{ book.name|highlight:query }}{% else %}{{ book.name }}{% endif %}</a></td>
                 <td>{% if query %}{{ book.author|highlight:query }}{% else %}{{ book.author }}{% endif %}</td>
                 <td>⭐ {{ book.combined_rating }}/5</td>
                 <td>{% if query %}{% if book.category %}{{ book.category.name|highlight:query }}{% endif %}{% else %}{% if book.category %}{{ book.category.name }}{% endif %}{% endif %}</td>
                 <td>{{ book.isbn }}</td>
                 <td>{{ book.number_in_stock }}</td>
-                <td>
-                    {% if book.description %}
-                        {{ book.description|truncatewords:20 }}
-                    {% else %}
-                        <span class="no-desc">No description</span>
-                    {% endif %}
-                </td>
+                <!-- description column intentionally left out; preview shows details on hover -->
             </tr>
             {% empty %}
             <tr>

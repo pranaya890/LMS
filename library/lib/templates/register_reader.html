@@ -2,9 +2,28 @@
 
 {% block content %}
 <h2>Register as a Reader</h2>
-<form method="post">
+<form method="post" class="form-container">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% for field in form %}
+        <div style="margin-bottom: 12px;">
+            {% if field.label %}
+                {{ field.label_tag }}
+            {% endif %}
+            {% if field.field.widget.input_type == 'radio' %}
+                <div style="margin-top: 8px;">
+                    {{ field }}
+                </div>
+            {% else %}
+                {{ field }}
+            {% endif %}
+            {% if field.help_text %}
+                <small style="display: block; color: #666; font-size: 12px; margin-top: 3px;">{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% if field.errors %}
+                <span style="color: #dc3545; font-size: 13px; display: block; margin-top: 3px;">{{ field.errors.0 }}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
     <button type="submit">Register</button>
     <a href="{% url 'login_reader' %}">Already have an account? Login</a>
 </form>
